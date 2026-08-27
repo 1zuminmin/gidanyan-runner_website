@@ -1,0 +1,513 @@
+/* ========================================
+   基本設定
+======================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+
+    background: #f5f5f5;
+    color: #222222;
+
+    text-align: center;
+
+    font-family:
+        "M PLUS Rounded 1c",
+        "Yu Gothic",
+        "Hiragino Sans",
+        "Meiryo",
+        sans-serif;
+}
+
+
+main {
+    width: 90%;
+    max-width: 500px;
+
+    margin: 30px auto;
+    padding-bottom: 30px;
+}
+
+
+/* ========================================
+   index.html：タイトルバナー
+======================================== */
+
+header {
+    width: 100%;
+    padding: 20px 0;
+}
+
+.title-banner-placeholder {
+    width: 90%;
+    max-width: 700px;
+    min-height: 180px;
+
+    margin: 0 auto;
+    padding: 24px;
+
+    background: #ffffff;
+
+    border: 5px dashed #000000;
+    border-radius: 25px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.title-banner-placeholder h2 {
+    margin-bottom: 10px;
+
+    color: #ff9800;
+    font-size: 2rem;
+}
+
+.title-banner-placeholder p {
+    color: #666666;
+}
+
+
+/* ========================================
+   index.html：ゲーム説明
+======================================== */
+
+.description-box {
+    min-height: 220px;
+
+    margin-bottom: 35px;
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 4px dashed #000000;
+    border-radius: 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.description-box h2 {
+    margin-bottom: 15px;
+
+    color: #ff9800;
+}
+
+.description-box p {
+    line-height: 1.8;
+}
+
+
+/* ========================================
+   ぎだにゃん風共通ボタン
+======================================== */
+
+.button-area,
+.stage-button-area {
+    margin-bottom: 40px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.gida-btn {
+    position: relative;
+
+    width: 100%;
+    max-width: 380px;
+    min-height: 90px;
+
+    margin: 0 auto;
+    padding: 18px 70px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #ffffff;
+    color: #ff9800;
+
+    border: 6px solid #000000;
+    border-radius: 999px;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.gida-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 0 #ff9800;
+    background: #fffaf2;
+}
+
+.gida-btn:focus-visible {
+    outline: 5px solid #ffd28a;
+    outline-offset: 5px;
+}
+
+.gida-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 #ff9800;
+}
+
+.btn-text {
+    color: #ff9800;
+
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+
+    white-space: nowrap;
+}
+
+.paw {
+    position: absolute;
+    left: 25px;
+
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.spark {
+    position: absolute;
+    top: 12px;
+    right: 25px;
+
+    color: #ff9800;
+
+    font-size: 1rem;
+    line-height: 1;
+}
+
+
+/* ========================================
+   BACKボタン
+======================================== */
+
+.back-btn {
+    min-height: 76px;
+}
+
+.back-btn .btn-text {
+    font-size: 1.5rem;
+}
+
+.back-arrow {
+    position: absolute;
+    left: 28px;
+
+    color: #ff9800;
+
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+
+/* ========================================
+   index.html：ダミーバナー
+======================================== */
+
+.banner-box {
+    min-height: 140px;
+
+    margin-bottom: 20px;
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 4px dashed #000000;
+    border-radius: 25px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.banner-box h3 {
+    margin-bottom: 10px;
+
+    color: #ff9800;
+}
+
+.banner-box p {
+    color: #666666;
+}
+
+
+/* ========================================
+   stage-select.html：タイトル
+======================================== */
+
+.stage-title {
+    margin-bottom: 30px;
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 5px solid #000000;
+    border-radius: 25px;
+}
+
+.stage-title h1 {
+    color: #ff9800;
+    font-size: 2rem;
+    letter-spacing: 1px;
+}
+
+
+/* ========================================
+   stage-select.html：ステージ一覧
+======================================== */
+
+.stage-list {
+    margin-bottom: 40px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.stage-card {
+    display: block;
+    overflow: hidden;
+
+    background: #ffffff;
+    color: #000000;
+
+    border: 5px solid #000000;
+    border-radius: 25px;
+
+    text-decoration: none;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.stage-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 0 #ff9800;
+}
+
+.stage-card:focus-visible {
+    outline: 5px solid #ffd28a;
+    outline-offset: 5px;
+}
+
+.stage-card:active {
+    transform: translateY(2px);
+    box-shadow: 0 3px 0 #ff9800;
+}
+
+.stage-image {
+    width: 100%;
+    height: 200px;
+
+    background: #eeeeee;
+    color: #888888;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.stage-name {
+    padding: 20px;
+
+    color: #ff9800;
+
+    border-top: 3px solid #000000;
+
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+
+/* ========================================
+   フッター
+======================================== */
+
+footer {
+    margin-top: 20px;
+    padding: 20px;
+
+    color: #666666;
+
+    font-size: 0.9rem;
+}
+
+
+/* ========================================
+   スマートフォン向け
+======================================== */
+
+@media (max-width: 500px) {
+
+    main {
+        width: 92%;
+        margin-top: 20px;
+    }
+
+    .title-banner-placeholder {
+        min-height: 150px;
+    }
+
+    .title-banner-placeholder h2 {
+        font-size: 1.6rem;
+    }
+
+    .stage-title h1 {
+        font-size: 1.7rem;
+    }
+
+    .gida-btn {
+        min-height: 80px;
+        padding-right: 55px;
+        padding-left: 55px;
+    }
+
+    .btn-text {
+        font-size: 1.35rem;
+    }
+
+    .paw {
+        left: 18px;
+        font-size: 1.5rem;
+    }
+
+    .spark {
+        top: 11px;
+        right: 18px;
+    }
+
+    .back-arrow {
+        left: 20px;
+        font-size: 1.7rem;
+    }
+
+    .stage-list {
+        gap: 30px;
+    }
+
+    .stage-image {
+        height: 170px;
+        font-size: 1.2rem;
+    }
+
+    .manga-placeholder {
+        min-height: 330px;
+    }
+
+    .manga-placeholder-title {
+        font-size: 1.5rem;
+    }
+
+    .manga-image {
+
+        display: flex;
+
+        justify-content: center;
+
+        align-items: center;
+    }
+}
+
+/* =========================
+   STAGE1
+========================= */
+
+.manga-box {
+
+    background: #ffffff;
+
+    border: 5px solid #000000;
+
+    border-radius: 25px;
+
+    padding: 20px;
+
+    margin-bottom: 30px;
+}
+
+.manga-image {
+
+    width: 100%;
+
+    height: 400px;
+
+    background: #eeeeee;
+
+    border-radius: 15px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    color: #ff9800;
+
+    font-size: 2rem;
+
+    font-weight: 800;
+
+    margin-bottom: 15px;
+}
+
+.manga-page {
+
+    text-align: center;
+
+    color: #ff9800;
+
+    font-size: 1.2rem;
+
+    font-weight: 800;
+}
+
+.unity-container {
+
+    display: none;
+
+    width: 100%;
+
+    margin-top: 20px;
+
+    margin-bottom: 30px;
+}
+
+.unity-frame {
+
+    width: 100%;
+
+    height: 700px;
+
+    border: 5px solid #000000;
+
+    border-radius: 25px;
+
+    background: #000000;
+}
