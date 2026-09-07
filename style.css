@@ -489,25 +489,29 @@ footer {
 }
 
 .unity-container {
-
     display: none;
 
     width: 100%;
+    max-width: 480px;
+    aspect-ratio: 9 / 16;
 
-    margin-top: 20px;
+    margin: 20px auto 30px;
 
-    margin-bottom: 30px;
+    overflow: hidden;
+
+    background: #000000;
+
+    border: 5px solid #000000;
+    border-radius: 25px;
 }
 
 .unity-frame {
+    display: block;
 
     width: 100%;
+    height: 100%;
 
-    height: 700px;
-
-    border: 5px solid #000000;
-
-    border-radius: 25px;
+    border: none;
 
     background: #000000;
 }

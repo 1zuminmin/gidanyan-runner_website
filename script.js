@@ -16,39 +16,50 @@ const pageNumber =
 const nextBtn =
     document.getElementById("nextBtn");
 
+const btnText =
+    nextBtn.querySelector(".btn-text");
+
+const mangaBox =
+    document.querySelector(".manga-box");
+
 const unityContainer =
     document.getElementById("unityContainer");
 
+const unityFrame =
+    document.getElementById("unityFrame");
+
 nextBtn.addEventListener("click", () => {
 
-    currentPage++;
+    // まだ次の漫画がある場合
+    if (currentPage < mangaPages.length - 1) {
 
-    if (currentPage < mangaPages.length) {
+        currentPage++;
 
         mangaImage.textContent =
             mangaPages[currentPage];
 
         pageNumber.textContent =
             `${currentPage + 1} / ${mangaPages.length}`;
+
+        // 4枚目でPLAY表示に変更
+        if (currentPage === mangaPages.length - 1) {
+            btnText.textContent = "PLAY";
+        }
+
+        return;
     }
 
-    if (currentPage === mangaPages.length - 1) {
+    // 4枚目でPLAYを押した場合
+    mangaBox.style.display = "none";
+    nextBtn.style.display = "none";
 
-        const btnText =
-            nextBtn.querySelector(".btn-text");
+    unityContainer.style.display = "block";
 
-        btnText.textContent = "PLAY";
-    }
+    // Unity Webビルドを読み込む
+    unityFrame.src = "./game/index.html";
 
-    if (currentPage >= mangaPages.length) {
-
-        document.querySelector(".manga-box")
-            .style.display = "none";
-
-        nextBtn.style.display = "none";
-
-        unityContainer.style.display =
-            "block";
-    }
-
+    unityContainer.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
 });
