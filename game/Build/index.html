@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#10223a">
+  <title>Run Gidanyan Prototype</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #07111f; touch-action: none; }
+    body { display: grid; place-items: center; }
+    #shell {
+      position: relative; width: min(100vw, 56.25vh); height: min(100vh, 177.78vw);
+      max-width: 720px; max-height: 1280px; overflow: hidden; background: #10223a;
+      box-shadow: 0 0 48px rgba(0,0,0,.5);
+    }
+    #unity-canvas { width: 100%; height: 100%; display: block; background: #10223a; }
+    #loading {
+      position: absolute; inset: 0; display: grid; place-content: center; gap: 20px;
+      padding: 48px; text-align: center; background: linear-gradient(160deg, #0d2540, #173a56 55%, #f06b2b);
+      transition: opacity .35s ease;
+    }
+    #loading.hidden { opacity: 0; pointer-events: none; }
+    .mascot { font-size: 76px; filter: drop-shadow(0 8px 12px rgba(0,0,0,.28)); }
+    h1 { margin: 0; font-size: clamp(30px, 8vw, 54px); }
+    p { margin: 0; line-height: 1.7; color: #deebf6; }
+    .bar { width: min(72vw, 420px); height: 14px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.18); }
+    #fill { width: 0; height: 100%; border-radius: inherit; background: #ff8a38; transition: width .12s linear; }
+    #fullscreen {
+      position: absolute; right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); z-index: 4;
+      width: 44px; height: 44px; border: 0; border-radius: 12px; color: white;
+      background: rgba(0,0,0,.45); font-size: 21px; cursor: pointer;
+    }
+    #banner { position: absolute; left: 12px; right: 12px; top: max(12px, env(safe-area-inset-top)); z-index: 5; }
+    #banner div { padding: 10px 14px; border-radius: 10px; background: #8b1e28; font-size: 13px; }
+    #rotate { display: none; position: fixed; inset: 0; z-index: 99; place-content: center; padding: 36px; text-align: center; background: #07111f; }
+    @media (orientation: landscape) and (max-height: 700px) { #rotate { display: grid; } }
+  </style>
+</head>
+<body>
+  <main id="shell">
+    <canvas id="unity-canvas" width="720" height="1280" tabindex="-1"></canvas>
+    <section id="loading" aria-live="polite">
+      <div class="mascot">🐱</div>
+      <h1>走れ！ぎだにゃん！</h1>
+      <p>岐大祭へ向かう準備中…<br>この待ち時間に、後から4コマを表示できます。</p>
+      <div class="bar"><div id="fill"></div></div>
+      <p id="status">ゲームを読み込んでいます</p>
+    </section>
+    <div id="banner"></div>
+    <button id="fullscreen" type="button" aria-label="全画面表示">⛶</button>
+  </main>
+  <aside id="rotate">スマートフォンを縦向きにしてください</aside>
+
+  <script>
+    const buildUrl = "Build";
+    const loaderUrl = buildUrl + "/Build.loader.js";
+    const config = {
+      dataUrl: buildUrl + "/Build.data.unityweb",
+      frameworkUrl: buildUrl + "/Build.framework.js.unityweb",
+      codeUrl: buildUrl + "/Build.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "Gifu University Digital Creative Club",
+      productName: "Run Gidanyan Prototype",
+      productVersion: "1.0",
+      showBanner: (message, type) => {
+        const banner = document.querySelector("#banner");
+        const item = document.createElement("div");
+        item.textContent = message;
+        item.style.background = type === "error" ? "#8b1e28" : "#7a5b16";
+        banner.appendChild(item);
+        if (type !== "error") setTimeout(() => item.remove(), 5000);
+      }
+    };
+
+    const canvas = document.querySelector("#unity-canvas");
+    const loading = document.querySelector("#loading");
+    const fill = document.querySelector("#fill");
+    const status = document.querySelector("#status");
+    const script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, progress => {
+        fill.style.width = `${Math.round(progress * 100)}%`;
+        status.textContent = `ゲームを読み込んでいます ${Math.round(progress * 100)}%`;
+      }).then(instance => {
+        loading.classList.add("hidden");
+        document.querySelector("#fullscreen").onclick = () => instance.SetFullscreen(1);
+      }).catch(error => {
+        status.textContent = "読み込みに失敗しました。ページを再読み込みしてください。";
+        console.error(error);
+      });
+    };
+    document.body.appendChild(script);
+    document.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
+  </script>
+</body>
+</html>
+
