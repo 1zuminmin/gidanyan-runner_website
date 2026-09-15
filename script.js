@@ -1,8 +1,8 @@
 const mangaPages = [
-    "漫画ダミー 1",
-    "漫画ダミー 2",
-    "漫画ダミー 3",
-    "漫画ダミー 4"
+    "images/stage1_manga-p1.png",
+    "images/stage1_manga-p2.png",
+    "images/stage1_manga-p3.png",
+    "images/stage1_manga-p4.png"
 ];
 
 let currentPage = 0;
@@ -35,8 +35,8 @@ nextBtn.addEventListener("click", () => {
 
         currentPage++;
 
-        mangaImage.textContent =
-            mangaPages[currentPage];
+        mangaImage.src = mangaPages[currentPage];
+        mangaImage.alt = `ステージ1の漫画・${currentPage + 1}ページ目`;
 
         pageNumber.textContent =
             `${currentPage + 1} / ${mangaPages.length}`;

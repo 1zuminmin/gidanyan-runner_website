@@ -515,3 +515,9 @@ footer {
 
     background: #000000;
 }
+
+img.manga-image {
+    display: block;
+    width: 100%;
+    height: auto;
+}
