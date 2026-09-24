@@ -56,15 +56,18 @@
 
   <script>
     const buildUrl = "Build";
-    const loaderUrl = buildUrl + "/unity.loader.js";
+    const buildVersion = "20260924-1730";
+    const versioned = path => `${path}?v=${buildVersion}`;
+    const loaderUrl = versioned(buildUrl + "/unity.loader.js");
     const config = {
-      dataUrl: buildUrl + "/unity.data.unityweb",
-      frameworkUrl: buildUrl + "/unity.framework.js.unityweb",
-      codeUrl: buildUrl + "/unity.wasm.unityweb",
+      dataUrl: versioned(buildUrl + "/unity.data.unityweb"),
+      frameworkUrl: versioned(buildUrl + "/unity.framework.js.unityweb"),
+      codeUrl: versioned(buildUrl + "/unity.wasm.unityweb"),
       streamingAssetsUrl: "StreamingAssets",
       companyName: "Gifu University Digital Creative Club",
       productName: "Run Gidanyan Prototype",
-      productVersion: "1.0",
+      productVersion: buildVersion,
+      cacheControl: () => "no-store",
       showBanner: (message, type) => {
         const banner = document.querySelector("#banner");
         const item = document.createElement("div");
@@ -89,7 +92,8 @@
         loading.classList.add("hidden");
         document.querySelector("#fullscreen").onclick = () => instance.SetFullscreen(1);
       }).catch(error => {
-        status.textContent = "読み込みに失敗しました。ページを再読み込みしてください。";
+        const detail = error instanceof Error ? error.message : String(error);
+        status.textContent = `読み込みに失敗しました。ページを再読み込みしてください。 (${detail})`;
         console.error(error);
       });
     };
@@ -98,4 +102,3 @@
   </script>
 </body>
 </html>
-
