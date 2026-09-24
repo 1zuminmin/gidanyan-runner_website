@@ -56,7 +56,7 @@
 
   <script>
     const buildUrl = "Build";
-    const buildVersion = "20260924-1730";
+    const buildVersion = "20260924-2003";
     const versioned = path => `${path}?v=${buildVersion}`;
     const loaderUrl = versioned(buildUrl + "/unity.loader.js");
     const config = {
@@ -67,7 +67,7 @@
       companyName: "Gifu University Digital Creative Club",
       productName: "Run Gidanyan Prototype",
       productVersion: buildVersion,
-      cacheControl: () => "no-store",
+      cacheControl: () => "immutable",
       showBanner: (message, type) => {
         const banner = document.querySelector("#banner");
         const item = document.createElement("div");
@@ -96,6 +96,9 @@
         status.textContent = `読み込みに失敗しました。ページを再読み込みしてください。 (${detail})`;
         console.error(error);
       });
+    };
+    script.onerror = () => {
+      status.textContent = "ゲームの読み込みファイルを取得できませんでした。ページを再読み込みしてください。";
     };
     document.body.appendChild(script);
     document.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
