@@ -56,7 +56,7 @@ nextBtn.addEventListener("click", () => {
     unityContainer.style.display = "block";
 
     // Unity Webビルドを読み込む
-    unityFrame.src = "./game/index.html";
+    unityFrame.src = "./game/index.html?v=20260924-1730";
 
     unityContainer.scrollIntoView({
         behavior: "smooth",
