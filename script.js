@@ -10,7 +10,7 @@ let unityState = "loading";
 let unityLoadId = 0;
 let unityLoadTimeout;
 
-const UNITY_URL = "./game/index.html?v=20260924-2003";
+const UNITY_URL = "./game/index.html?v=20260925-1318";
 const UNITY_MESSAGE_SOURCE = "gidanyan-unity";
 const UNITY_LOAD_TIMEOUT_MS = 180000;
 
