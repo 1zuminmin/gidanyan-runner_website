@@ -125,6 +125,8 @@ header {
 .gida-btn {
     position: relative;
 
+    font-family: inherit;
+
     width: 100%;
     max-width: 380px;
     min-height: 90px;
