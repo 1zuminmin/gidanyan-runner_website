@@ -45,8 +45,10 @@
             <span class="btn-text">NEXT</span>
         </button>
 
+        <p id="unityStatus" class="unity-status" role="status" aria-live="polite" hidden></p>
+
         <!-- Unityゲーム表示領域 -->
-        <div id="unityContainer" class="unity-container">
+        <div id="unityContainer" class="unity-container is-preloading" aria-hidden="true">
 
             <iframe
                 id="unityFrame"

@@ -57,6 +57,15 @@
   <script>
     const buildUrl = "Build";
     const buildVersion = "20260924-2003";
+    const loadId = new URLSearchParams(window.location.search).get("loadId") || "";
+    const notifyParent = (type, message = "") => {
+      window.parent.postMessage({
+        source: "gidanyan-unity",
+        type,
+        loadId,
+        message
+      }, window.location.origin);
+    };
     const versioned = path => `${path}?v=${buildVersion}`;
     const loaderUrl = versioned(buildUrl + "/unity.loader.js");
     const config = {
@@ -85,20 +94,23 @@
     const script = document.createElement("script");
     script.src = loaderUrl;
     script.onload = () => {
-      createUnityInstance(canvas, config, progress => {
+      Promise.resolve().then(() => createUnityInstance(canvas, config, progress => {
         fill.style.width = `${Math.round(progress * 100)}%`;
         status.textContent = `ゲームを読み込んでいます ${Math.round(progress * 100)}%`;
-      }).then(instance => {
+      })).then(instance => {
         loading.classList.add("hidden");
         document.querySelector("#fullscreen").onclick = () => instance.SetFullscreen(1);
+        notifyParent("ready");
       }).catch(error => {
         const detail = error instanceof Error ? error.message : String(error);
         status.textContent = `読み込みに失敗しました。ページを再読み込みしてください。 (${detail})`;
         console.error(error);
+        notifyParent("error", `ゲームの読み込みに失敗しました。「再試行」を押してください。 (${detail})`);
       });
     };
     script.onerror = () => {
       status.textContent = "ゲームの読み込みファイルを取得できませんでした。ページを再読み込みしてください。";
+      notifyParent("error", "ゲームの読み込みファイルを取得できませんでした。「再試行」を押してください。");
     };
     document.body.appendChild(script);
     document.addEventListener("touchmove", event => event.preventDefault(), { passive: false });

@@ -168,6 +168,30 @@ header {
     box-shadow: 0 2px 0 #ff9800;
 }
 
+.gida-btn:disabled {
+    transform: none;
+    box-shadow: none;
+    cursor: wait;
+}
+
+.gida-btn.is-loading {
+    background: #eeeeee;
+    border-color: #777777;
+}
+
+.gida-btn.is-loading .btn-text {
+    color: #777777;
+}
+
+.gida-btn.is-error {
+    background: #fff1f1;
+    border-color: #b42318;
+}
+
+.gida-btn.is-error .btn-text {
+    color: #b42318;
+}
+
 .btn-text {
     color: #ff9800;
 
@@ -489,8 +513,6 @@ footer {
 }
 
 .unity-container {
-    display: none;
-
     width: 100%;
     max-width: 480px;
     aspect-ratio: 9 / 16;
@@ -503,6 +525,34 @@ footer {
 
     border: 5px solid #000000;
     border-radius: 25px;
+}
+
+/* Unityにゼロではない描画サイズを与えたまま、PLAYまでは画面外で待機させる。 */
+.unity-container.is-preloading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+
+    width: min(100vw, 480px);
+    margin: 0;
+
+    opacity: 0;
+    pointer-events: none;
+}
+
+.unity-container.is-visible {
+    position: relative;
+    z-index: auto;
+    opacity: 1;
+}
+
+.unity-status {
+    max-width: 380px;
+    margin: 12px auto 20px;
+    color: #555555;
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
 .unity-frame {
