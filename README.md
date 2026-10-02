@@ -131,7 +131,7 @@ Visual Studio CodeのLive Serverなど、HTTPサーバーを使用して `stage1
 以下の内容を確認する。
 
 1. 漫画が4ページ目まで表示される
-2. 漫画を読んでいる間にゲームが先読みされる
+2. 漫画4枚の準備後、読んでいる間にゲームが先読みされる
 3. 読み込み完了後に「PLAY」が表示される
 4. 「PLAY」を押すとゲームが表示される
 5. ゲームを操作できる
@@ -195,3 +195,31 @@ git restore game/index.html
 ファイル名の大文字・小文字を確認する。
 
 Windowsでは大文字・小文字が違っていても動く場合があるが、GitHub Pagesでは別ファイルとして扱われる。
+
+## 難易度とUnityの接続
+
+| ページ | 表示 | Unityシーン |
+|---|---|---|
+| `stage1.html` | Easy | `Easy.unity` |
+| `stage2.html` | Normal | 現在の `Main.unity` |
+| `stage3.html` | Hard（準備中） | 未実装のため起動しない |
+
+EasyとNormalは既存の4ページの漫画を共用します。ページの`data-difficulty`を`script.js`が読み、iframeのURLへ`difficulty=easy`または`difficulty=normal`を付けます。URL・漫画の画像ファイル名は従来のstage番号を維持しています。
+
+低速回線では漫画を優先します。1ページ目を取得・デコードして表示した後、残り3枚を順番に先読みし、4枚すべての準備が整ってからUnityを読み込みます。NEXTは次の画像の準備が整うまで無効にし、準備済みの画像要素へ切り替えると同時にページ番号を更新します。画像の失敗・60秒のタイムアウト時は「漫画を再試行」を表示し、取得できたページを維持したまま失敗したページから再開します。Unityの180秒のタイムアウトはUnityの読み込み開始時から計測します。
+
+Unity側ではWebBootstrap → 対象シーンの順に読み込みます。`game/launch.js`はUnity本体と対象シーンの両方の準備完了を待ってから親ページへ通知します。難易度・読み込みID・送信元が一致した通知だけでPLAYを有効にします。失敗時は同じ難易度で再試行します。
+
+ゲームへの直接アクセスで難易度を省略した場合はNormalです。Hard・空文字・不明な難易度はエラーを表示し、別の難易度を代わりに起動しません。
+
+### 接続に対応したビルドの作成
+
+Unity側の `Tools > Gidanyan Runner > Build Web (Easy and Normal)` を使い、WebBootstrap・Easy・Mainを含むビルドを作成します。従来のMainのみのビルドは準備完了通知に対応していないため使用できません。
+
+`Builds/WebDifficulty/Build`内の4ファイルを上記の名前へそろえて`game/Build`へコピーし、`StreamingAssets`も`game/StreamingAssets`へ反映します。初回および接続処理の更新時は、ビルド出力の`launch.js`も`game/launch.js`へコピーします。元ファイルはUnity側の`Assets/WebGLTemplates/GidanyanMobile/launch.js`です。Web独自の`game/index.html`は維持してください。
+
+`script.js`のUNITY_URL、`game/index.html`のbuildVersion、およびlaunch.jsを読み込むURLのバージョンを更新します。
+
+### 検証
+
+`node --test tests/difficulty.test.mjs`で漫画を優先する取得順、低速時のページ送り、画像の失敗・タイムアウト・再試行、Unity準備完了の順序、難易度の一致を確認できます。HTTPサーバー上ではEasyとNormalで漫画→PLAY→ゲーム開始、Hardで準備中とBACK、スマートフォン幅の表示を確認します。

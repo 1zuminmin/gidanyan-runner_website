@@ -45,7 +45,7 @@
     <section id="loading" aria-live="polite">
       <div class="mascot">🐱</div>
       <h1>走れ！ぎだにゃん！</h1>
-      <p>岐大祭へ向かう準備中…<br>この待ち時間に、後から4コマを表示できます。</p>
+      <p>岐大祭へ向かう準備中…</p>
       <div class="bar"><div id="fill"></div></div>
       <p id="status">ゲームを読み込んでいます</p>
     </section>
@@ -54,18 +54,10 @@
   </main>
   <aside id="rotate">スマートフォンを縦向きにしてください</aside>
 
+  <script src="launch.js?v=20261002-difficulty1"></script>
   <script>
     const buildUrl = "Build";
-    const buildVersion = "20260930-1715";
-    const loadId = new URLSearchParams(window.location.search).get("loadId") || "";
-    const notifyParent = (type, message = "") => {
-      window.parent.postMessage({
-        source: "gidanyan-unity",
-        type,
-        loadId,
-        message
-      }, window.location.origin);
-    };
+    const buildVersion = "20261002-difficulty1";
     const versioned = path => `${path}?v=${buildVersion}`;
     const loaderUrl = versioned(buildUrl + "/unity.loader.js");
     const config = {
@@ -87,33 +79,7 @@
       }
     };
 
-    const canvas = document.querySelector("#unity-canvas");
-    const loading = document.querySelector("#loading");
-    const fill = document.querySelector("#fill");
-    const status = document.querySelector("#status");
-    const script = document.createElement("script");
-    script.src = loaderUrl;
-    script.onload = () => {
-      Promise.resolve().then(() => createUnityInstance(canvas, config, progress => {
-        fill.style.width = `${Math.round(progress * 100)}%`;
-        status.textContent = `ゲームを読み込んでいます ${Math.round(progress * 100)}%`;
-      })).then(instance => {
-        loading.classList.add("hidden");
-        document.querySelector("#fullscreen").onclick = () => instance.SetFullscreen(1);
-        notifyParent("ready");
-      }).catch(error => {
-        const detail = error instanceof Error ? error.message : String(error);
-        status.textContent = `読み込みに失敗しました。ページを再読み込みしてください。 (${detail})`;
-        console.error(error);
-        notifyParent("error", `ゲームの読み込みに失敗しました。「再試行」を押してください。 (${detail})`);
-      });
-    };
-    script.onerror = () => {
-      status.textContent = "ゲームの読み込みファイルを取得できませんでした。ページを再読み込みしてください。";
-      notifyParent("error", "ゲームの読み込みファイルを取得できませんでした。「再試行」を押してください。");
-    };
-    document.body.appendChild(script);
-    document.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
+    startGidanyanGame(config, loaderUrl);
   </script>
 </body>
 </html>
