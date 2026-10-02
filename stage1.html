@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>STAGE 1 | 走れ！ぎだにゃん！</title>
+    <title>Easy | 走れ！ぎだにゃん！</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,34 +15,42 @@
         href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800&display=swap"
     >
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20261002-manga-first1">
 </head>
 
-<body>
+<body data-difficulty="easy" data-difficulty-label="Easy">
 
     <main>
 
         <div class="stage-title">
-            <h1>STAGE 1</h1>
+            <h1>Easy</h1>
         </div>
 
         <div class="manga-box">
 
-            <img 
+            <img
             id="mangaImage"
             class="manga-image"
             src="images/stage1_manga-p1.png"
-            alt="ステージ1の漫画・1ページ目"
+            alt="Easyの漫画・1ページ目"
+            fetchpriority="high"
+            decoding="async"
+            hidden
             >
 
-            <div id="pageNumber" class="manga-page">
+            <p id="mangaStatus" class="unity-status" role="status" aria-live="polite">漫画を読み込んでいます…</p>
+            <button id="mangaRetryBtn" class="gida-btn manga-retry" type="button" hidden>
+                <span class="btn-text">漫画を再試行</span>
+            </button>
+
+            <div id="pageNumber" class="manga-page" hidden>
                 1 / 4
             </div>
 
         </div>
 
-        <button id="nextBtn" class="gida-btn" type="button">
-            <span class="btn-text">NEXT</span>
+        <button id="nextBtn" class="gida-btn" type="button" disabled>
+            <span class="btn-text">漫画読込中…</span>
         </button>
 
         <p id="unityStatus" class="unity-status" role="status" aria-live="polite" hidden></p>
@@ -53,7 +61,7 @@
             <iframe
                 id="unityFrame"
                 class="unity-frame"
-                title="走れ！ぎだにゃん！"
+                title="Easy | 走れ！ぎだにゃん！"
                 allow="autoplay; fullscreen"
                 allowfullscreen>
             </iframe>
@@ -69,7 +77,7 @@
 
     </main>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=20261002-manga-first1"></script>
 
 </body>
 

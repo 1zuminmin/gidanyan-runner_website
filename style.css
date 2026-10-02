@@ -432,7 +432,7 @@ footer {
 }
 
 /* =========================
-   STAGE1
+   Easy / Normal ゲームページ
 ========================= */
 
 .manga-box {
@@ -542,4 +542,25 @@ img.manga-image {
     display: block;
     width: 100%;
     height: auto;
+}
+
+img.manga-image[hidden],
+.manga-retry[hidden] {
+    display: none;
+}
+
+.stage-note {
+    display: inline-block;
+    margin-left: 12px;
+    color: #555555;
+    font-size: 1rem;
+}
+
+.stage-unavailable {
+    padding: 32px 20px;
+    margin-bottom: 30px;
+    border: 5px solid #000000;
+    border-radius: 25px;
+    background: #ffffff;
+    line-height: 1.8;
 }
