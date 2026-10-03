@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1440" viewBox="0 0 1080 1440">
+  <path fill="#ffbd65" fill-rule="evenodd" d="M0 0H1080V1440H0Z M48 190V1250H1032V190Z"/>
+  <path d="M48 190H1032V1250H48Z" stroke="#3e2f26" stroke-width="12" fill="none"/>
+  <rect x="145" y="41" width="790" height="108" rx="54" fill="#fff7e9" stroke="#3e2f26" stroke-width="7"/>
+  <g font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#3e2f26">
+    <text x="540" y="112" font-size="50">ぎだにゃんといっしょ！</text>
+    <text x="540" y="1340" font-size="38">GIDANYAN PHOTO</text>
+    <text x="540" y="1395" font-size="28">大学祭の思い出を一枚に。</text>
+  </g>
+  <g fill="#fff7e9" stroke="#3e2f26" stroke-width="5">
+    <path d="M75 52L86 80L117 84L93 104L99 135L75 119L50 135L56 104L32 84L64 80Z"/>
+    <path d="M1002 52L1013 80L1044 84L1020 104L1026 135L1002 119L977 135L983 104L959 84L991 80Z"/>
+    <circle cx="91" cy="1331" r="24"/><circle cx="985" cy="1331" r="24"/>
+  </g>
+</svg>

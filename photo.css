@@ -1,0 +1,104 @@
+.photo-page {
+    background: #fff7e9;
+    font-family: "Yu Gothic", "Hiragino Sans", "Meiryo", sans-serif;
+}
+
+.photo-page [hidden] { display: none !important; }
+
+.photo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: min(94%, 920px);
+    margin: 0 auto;
+    padding: 16px 0;
+}
+
+.home-link {
+    padding: 10px 0;
+    color: #332b23;
+    font-weight: bold;
+    text-underline-offset: 5px;
+}
+
+.photo-tag {
+    padding: 5px 12px;
+    border: 2px solid #222;
+    border-radius: 99px;
+    background: #ffca70;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.photo-main { width: 92%; max-width: 880px; margin: 8px auto 0; }
+.photo-main h1 { font-size: clamp(1.5rem, 6vw, 2rem); }
+.photo-intro { margin: 8px 0 24px; color: #66543e; font-size: 0.9rem; }
+.photo-workspace { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 28px; align-items: start; }
+
+.photo-preview {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border: 3px solid #222;
+    border-radius: 18px;
+    background: #e8e1d8;
+    box-shadow: 5px 6px 0 #e6bf83;
+}
+
+.photo-preview canvas, .photo-preview img { display: block; width: 100%; height: 100%; }
+.preview-cover { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; background: #f4ede3; color: #66543e; }
+.preview-cover span { font-size: 3rem; }
+.preview-cover p { font-size: 0.95rem; line-height: 1.7; }
+.photo-controls { text-align: left; min-width: 0; }
+.photo-status { margin-bottom: 18px; line-height: 1.7; font-weight: bold; font-size: 0.95rem; }
+.photo-status.is-error { color: #9a2921; }
+.photo-controls fieldset { border: 0; margin: 0 0 18px; padding: 0; }
+.photo-controls legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.photo-controls label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 7px; }
+.photo-controls select { display: block; width: 100%; min-height: 48px; padding: 10px 12px; margin-bottom: 16px; border: 2px solid #332b23; border-radius: 10px; color: #222; background: #fff; font: inherit; font-size: 1rem; }
+
+.photo-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 50px;
+    padding: 12px;
+    border: 2px solid #222;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+    color: #222;
+    background: #fff;
+}
+
+.photo-button.primary { background: #ffba4f; box-shadow: 0 3px 0 #222; }
+.photo-button:hover:not(:disabled) { background: #ffe0aa; }
+.photo-button:disabled, .photo-controls fieldset:disabled { opacity: 0.55; }
+.photo-button:disabled { cursor: default; box-shadow: none; }
+.photo-page :focus-visible { outline: 3px solid #985100; outline-offset: 4px; }
+.result-actions { display: grid; gap: 12px; }
+.save-note, .photo-note { color: #6b5d4d; font-size: 0.75rem; line-height: 1.8; }
+.photo-note { margin-top: 22px; }
+.camera-source { position: fixed; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+@media (max-width: 680px) {
+    .photo-header { padding: 8px 0; }
+    .photo-workspace { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .photo-main { max-width: 440px; }
+    .photo-preview { max-width: min(300px, 34svh); margin: 0 auto; }
+    .photo-intro { margin-bottom: 14px; }
+    .photo-status { margin-bottom: 12px; }
+    .photo-controls fieldset { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 10px; margin-bottom: 12px; }
+    .photo-controls label { margin: 0; }
+    .photo-controls label[for="frameSelect"] { grid-area: 1 / 1; }
+    .photo-controls label[for="poseSelect"] { grid-area: 1 / 2; }
+    #frameSelect { grid-area: 2 / 1; }
+    #poseSelect { grid-area: 2 / 2; }
+    .photo-controls select { margin: 0; padding: 8px; font-size: 0.85rem; }
+    #switchCamera { grid-area: 3 / 1 / auto / 3; min-height: 44px; padding: 8px; }
+}

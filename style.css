@@ -564,3 +564,27 @@ img.manga-image[hidden],
     background: #ffffff;
     line-height: 1.8;
 }
+
+.photo-entry {
+    min-height: 76px;
+    padding: 14px 18px 14px 52px;
+    border-width: 4px;
+    background: #fff7e9;
+}
+
+.photo-entry .btn-text {
+    font-size: clamp(1rem, 4.5vw, 1.4rem);
+}
+
+.photo-entry small {
+    display: block;
+    margin-top: 4px;
+    color: #66543e;
+    font-size: 0.7rem;
+    font-weight: normal;
+}
+
+.photo-entry .paw {
+    left: 16px;
+    font-size: 1.4rem;
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#fff7e9">
+    <title>ぎだにゃんフォト | 走れ！ぎだにゃん！</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="photo.css">
+    <script type="module" src="photo.js"></script>
+</head>
+<body class="photo-page">
+    <header class="photo-header">
+        <a id="homeLink" class="home-link" href="index.html">← ホームへ戻る</a>
+        <span class="photo-tag">おまけ</span>
+    </header>
+    <main class="photo-main">
+        <h1>ぎだにゃんフォト</h1>
+        <p class="photo-intro">お気に入りのフレームで、はい、チーズ！</p>
+        <div class="photo-workspace">
+            <div class="photo-preview">
+                <canvas id="photoCanvas" width="1080" height="1440" role="img" aria-label="フレームとぎだにゃんを重ねた撮影プレビュー"></canvas>
+                <img id="capturedPhoto" alt="撮影したぎだにゃんフォト" hidden>
+                <div id="previewCover" class="preview-cover">
+                    <span aria-hidden="true">📷</span>
+                    <p id="previewMessage">カメラを準備しています…</p>
+                </div>
+            </div>
+            <section class="photo-controls" aria-label="撮影の設定と操作">
+                <p id="photoStatus" class="photo-status" role="status" aria-live="polite">カメラの利用を許可してください。</p>
+                <fieldset id="photoOptions" disabled>
+                    <legend>写真をカスタマイズ</legend>
+                    <label for="frameSelect">フレーム</label>
+                    <select id="frameSelect">
+                        <option value="insta">インスタ風</option>
+                        <option value="x">X風</option>
+                        <option value="original">オリジナル</option>
+                    </select>
+                    <label for="poseSelect">ぎだにゃん</label>
+                    <select id="poseSelect">
+                        <option value="pose1">ポーズ1：おすわり</option>
+                        <option value="pose2">ポーズ2：手をふる</option>
+                        <option value="none">非表示</option>
+                    </select>
+                    <button id="switchCamera" class="photo-button secondary" type="button">前後のカメラを切り替え</button>
+                </fieldset>
+                <button id="captureButton" class="photo-button primary" type="button" disabled>撮影する</button>
+                <button id="retryCamera" class="photo-button primary" type="button" hidden>カメラを起動する</button>
+                <div id="resultActions" class="result-actions" hidden>
+                    <a id="savePhoto" class="photo-button primary" download="gidanyan-photo.png">写真を保存</a>
+                    <button id="sharePhoto" class="photo-button secondary" type="button" hidden>共有・写真に保存</button>
+                    <button id="retakeButton" class="photo-button secondary" type="button">撮り直す</button>
+                    <p class="save-note">保存先は端末・ブラウザによって異なります。画像を長押しして保存することもできます。</p>
+                </div>
+                <p class="photo-note">フレーム・イラストは仮デザインです。<br>写真はこの端末内で作成され、サーバーへ送信されません。</p>
+            </section>
+        </div>
+        <noscript><p class="photo-status">撮影にはJavaScriptを有効にしてください。</p></noscript>
+    </main>
+    <video id="cameraVideo" class="camera-source" autoplay muted playsinline aria-hidden="true"></video>
+    <footer>© 第78回岐阜大学祭実行委員会</footer>
+</body>
+</html>
