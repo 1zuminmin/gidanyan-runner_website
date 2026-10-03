@@ -4,8 +4,8 @@ const byId = id => document.getElementById(id);
 const video = byId('cameraVideo');
 const canvas = byId('photoCanvas');
 const ctx = canvas.getContext('2d');
-const frameSelect = byId('frameSelect');
-const poseSelect = byId('poseSelect');
+const photoOptions = byId('photoOptions');
+const selected = name => document.querySelector(`input[name="${name}"]:checked`).value;
 const status = byId('photoStatus');
 const cover = byId('previewCover');
 const capturedPhoto = byId('capturedPhoto');
@@ -13,6 +13,7 @@ const captureButton = byId('captureButton');
 const retryButton = byId('retryCamera');
 const shareButton = byId('sharePhoto');
 const saveLink = byId('savePhoto');
+const helpDialog = byId('helpDialog');
 let assets;
 let stream;
 let animation;
@@ -25,13 +26,17 @@ let photoFile;
 
 function setStatus(message, error = false) {
     status.textContent = message;
-    status.classList.toggle('is-error', error);
+    byId('announcement').textContent = message;
+    byId('resultNotice').hidden = phase !== 'captured' || !error;
+    byId('resultNotice').textContent = error ? message : '';
 }
 
 function setPhase(next) {
     phase = next;
-    byId('photoOptions').disabled = next !== 'live';
-    byId('photoOptions').hidden = ['capturing', 'captured'].includes(next);
+    photoOptions.querySelectorAll('fieldset').forEach(group => { group.disabled = next !== 'live'; });
+    photoOptions.hidden = ['capturing', 'captured'].includes(next);
+    byId('switchCamera').disabled = next !== 'live';
+    byId('cameraActions').hidden = ['capturing', 'captured'].includes(next);
     captureButton.disabled = next !== 'live';
     captureButton.hidden = ['capturing', 'captured', 'error', 'paused'].includes(next);
     retryButton.hidden = !['error', 'paused'].includes(next);
@@ -72,7 +77,7 @@ function cameraError(error) {
 }
 
 function draw() {
-    renderPhoto(ctx, video, assets, frameSelect.value, poseSelect.value, mirror);
+    renderPhoto(ctx, video, assets, selected('frame'), selected('pose'), mirror);
 }
 
 function drawLive() {
@@ -126,7 +131,7 @@ async function startCamera() {
         if (request !== generation) return;
         if (!video.videoWidth || !video.videoHeight || video.readyState < 2) throw new Error('video');
         setPhase('live');
-        setStatus('フレームとポーズを選んで撮影しましょう。');
+        setStatus('撮影できます。');
         drawLive();
     } catch (error) {
         if (request === generation) showError(error.message === 'assets'
@@ -161,7 +166,8 @@ captureButton.addEventListener('click', () => {
         try { canShare = Boolean(navigator.share && navigator.canShare?.({ files: [photoFile] })); } catch { /* Download remains available. */ }
         shareButton.hidden = !canShare;
         setPhase('captured');
-        setStatus('撮影できました！写真を保存できます。');
+        setStatus('撮影しました。保存または撮り直しができます。');
+        saveLink.focus({ preventScroll: true });
     }, 'image/png');
 });
 
@@ -170,7 +176,7 @@ shareButton.addEventListener('click', async () => {
     shareButton.disabled = true;
     try { await navigator.share({ files: [photoFile] }); }
     catch (error) {
-        if (error.name !== 'AbortError') setStatus('共有できませんでした。「写真を保存」または画像の長押しをお試しください。', true);
+        if (error.name !== 'AbortError') setStatus('共有できませんでした。「保存」または画像の長押しをお試しください。', true);
     } finally { shareButton.disabled = false; }
 });
 
@@ -178,8 +184,12 @@ byId('switchCamera').addEventListener('click', () => {
     facing = facing === 'user' ? 'environment' : 'user';
     startCamera();
 });
-frameSelect.addEventListener('change', () => { if (phase === 'live') draw(); });
-poseSelect.addEventListener('change', () => { if (phase === 'live') draw(); });
+photoOptions.addEventListener('change', () => { if (phase === 'live') draw(); });
+byId('helpButton').addEventListener('click', () => helpDialog.showModal());
+helpDialog.addEventListener('click', event => {
+    const bounds = helpDialog.getBoundingClientRect();
+    if (event.target === helpDialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) helpDialog.close();
+});
 byId('retakeButton').addEventListener('click', startCamera);
 retryButton.addEventListener('click', startCamera);
 byId('homeLink').addEventListener('click', () => { stopCamera(); clearPhoto(); });
@@ -189,7 +199,7 @@ document.addEventListener('visibilitychange', () => {
         stopCamera();
         setPhase('paused');
         byId('previewMessage').textContent = 'カメラを停止しました';
-        setStatus('撮影を続けるにはカメラを起動してください。');
+        setStatus('「起動」を押すと撮影を再開できます。');
     }
 });
 window.addEventListener('pagehide', () => { stopCamera(); clearPhoto(); });
@@ -197,7 +207,7 @@ window.addEventListener('pageshow', event => {
     if (event.persisted) {
         setPhase('paused');
         byId('previewMessage').textContent = 'カメラを停止しました';
-        setStatus('撮影を続けるにはカメラを起動してください。');
+        setStatus('「起動」を押すと撮影を再開できます。');
     }
 });
 

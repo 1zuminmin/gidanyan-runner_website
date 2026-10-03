@@ -67,6 +67,21 @@ test('ぎだにゃんフォト: browser integration', async t => {
 
     const waitLive = page => page.waitForFunction(() => !document.querySelector('#captureButton').disabled);
     const stopped = page => page.evaluate(() => window.photoTest.streams.every(stream => stream.getTracks().every(track => track.readyState === 'ended')));
+    const assertFits = async page => {
+        const layout = await page.evaluate(() => {
+            const visible = element => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden';
+            const controls = [...document.querySelectorAll('.photo-header a, .photo-header button, .photo-controls button, .photo-controls a, .choice-face')].filter(visible);
+            return {
+                overflow: document.documentElement.scrollHeight > innerHeight || document.documentElement.scrollWidth > innerWidth,
+                clipped: controls.filter(element => {
+                    const r = element.getBoundingClientRect();
+                    return r.top < 0 || r.left < 0 || r.bottom > innerHeight + 1 || r.right > innerWidth + 1;
+                }).map(element => element.id || element.className)
+            };
+        });
+        assert.equal(layout.overflow, false, 'the main screen needs no scrolling');
+        assert.deepEqual(layout.clipped, [], 'all controls remain visible');
+    };
 
     await t.test('home → 9 frame/pose combinations → PNG → retake → home; preview equals export', async () => {
         const { page, errors } = await open();
@@ -79,8 +94,8 @@ test('ぎだにゃんフォト: browser integration', async t => {
             assert.equal(await page.evaluate(() => document.querySelector('#captureButton').getBoundingClientRect().bottom <= innerHeight), true, 'mobile shutter fits in the viewport');
             for (const frame of ['insta', 'x', 'original']) {
                 for (const pose of ['pose1', 'pose2', 'none']) {
-                    await page.selectOption('#frameSelect', frame);
-                    await page.selectOption('#poseSelect', pose);
+                    await page.locator(`.photo-choice:has(input[name="frame"][value="${frame}"])`).click();
+                    await page.locator(`.photo-choice:has(input[name="pose"][value="${pose}"])`).click();
                     await page.click('#captureButton');
                     await page.waitForFunction(() => !document.querySelector('#resultActions').hidden);
                     assert.equal(await stopped(page), true);
@@ -113,8 +128,8 @@ test('ぎだにゃんフォト: browser integration', async t => {
                     }
                     await page.click('#retakeButton');
                     await waitLive(page);
-                    assert.equal(await page.inputValue('#frameSelect'), frame);
-                    assert.equal(await page.inputValue('#poseSelect'), pose);
+                    assert.equal(await page.inputValue('input[name="frame"]:checked'), frame);
+                    assert.equal(await page.inputValue('input[name="pose"]:checked'), pose);
                 }
             }
             await page.setViewportSize({ width: 1280, height: 900 });
@@ -233,5 +248,50 @@ test('ぎだにゃんフォト: browser integration', async t => {
             assert.equal(await page.isDisabled('#sharePhoto'), false);
             assert.deepEqual(errors, []);
         } finally { await page.close(); }
+    });
+
+    await t.test('small and landscape screens fit live, captured and error states; help closes and restores focus', async () => {
+        const { page, errors } = await open();
+        try {
+            await page.goto(`${base}/photo.html`);
+            await waitLive(page);
+            for (const viewport of [{ width: 320, height: 480 }, { width: 320, height: 568 }, { width: 390, height: 664 }, { width: 390, height: 844 }, { width: 568, height: 320 }, { width: 844, height: 390 }]) {
+                await page.setViewportSize(viewport);
+                await assertFits(page);
+                if (process.env.PHOTO_SCREENSHOT_DIR && viewport.width === 390 && viewport.height === 664) await page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, 'photo-compact-live.png'), fullPage: true });
+                await page.click('#helpButton');
+                assert.equal(await page.isVisible('#helpDialog'), true);
+                await page.getByRole('button', { name: '閉じる' }).click();
+                assert.equal(await page.isVisible('#helpDialog'), false);
+                assert.equal(await page.evaluate(() => document.activeElement.id), 'helpButton');
+                await page.click('#captureButton');
+                await page.waitForFunction(() => !document.querySelector('#resultActions').hidden);
+                await assertFits(page);
+                await page.click('#retakeButton');
+                await waitLive(page);
+            }
+            await page.click('#helpButton');
+            await page.keyboard.press('Escape');
+            assert.equal(await page.isVisible('#helpDialog'), false);
+            assert.deepEqual(errors, []);
+        } finally { await page.close(); }
+
+        const denied = await open('deny');
+        try {
+            await denied.page.goto(`${base}/photo.html`);
+            await denied.page.waitForFunction(() => !document.querySelector('#retryCamera').hidden);
+            for (const viewport of [{ width: 320, height: 480 }, { width: 390, height: 664 }, { width: 568, height: 320 }]) {
+                await denied.page.setViewportSize(viewport);
+                await assertFits(denied.page);
+                assert.equal(await denied.page.evaluate(() => {
+                    const title = document.querySelector('#previewMessage').getBoundingClientRect();
+                    const detail = document.querySelector('#photoStatus').getBoundingClientRect();
+                    const cover = document.querySelector('#previewCover').getBoundingClientRect();
+                    return detail.top >= title.bottom && detail.bottom <= cover.bottom;
+                }), true, 'error detail sits below its heading inside the preview');
+                if (process.env.PHOTO_SCREENSHOT_DIR && viewport.width === 390) await denied.page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, 'photo-compact-error.png'), fullPage: true });
+            }
+            assert.deepEqual(denied.errors, []);
+        } finally { await denied.page.close(); }
     });
 });

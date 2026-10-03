@@ -2,8 +2,8 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#fff7e9">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f5f5f5">
     <title>ぎだにゃんフォト | 走れ！ぎだにゃん！</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="photo.css">
@@ -11,53 +11,84 @@
 </head>
 <body class="photo-page">
     <header class="photo-header">
-        <a id="homeLink" class="home-link" href="index.html">← ホームへ戻る</a>
-        <span class="photo-tag">おまけ</span>
+        <a id="homeLink" class="home-link" href="index.html">← ホーム</a>
+        <button id="helpButton" class="help-button" type="button" aria-haspopup="dialog" aria-controls="helpDialog">遊び方</button>
     </header>
-    <main class="photo-main">
-        <h1>ぎだにゃんフォト</h1>
-        <p class="photo-intro">お気に入りのフレームで、はい、チーズ！</p>
-        <div class="photo-workspace">
-            <div class="photo-preview">
-                <canvas id="photoCanvas" width="1080" height="1440" role="img" aria-label="フレームとぎだにゃんを重ねた撮影プレビュー"></canvas>
-                <img id="capturedPhoto" alt="撮影したぎだにゃんフォト" hidden>
-                <div id="previewCover" class="preview-cover">
-                    <span aria-hidden="true">📷</span>
-                    <p id="previewMessage">カメラを準備しています…</p>
-                </div>
+    <main class="photo-main" aria-label="ぎだにゃんフォト">
+        <div class="photo-preview">
+            <canvas id="photoCanvas" width="1080" height="1440" role="img" aria-label="フレームとぎだにゃんを重ねた撮影プレビュー"></canvas>
+            <img id="capturedPhoto" alt="撮影したぎだにゃんフォト" hidden>
+            <div id="previewCover" class="preview-cover">
+                <svg class="preview-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 10h6l3-4h6l3 4h6v17H4z"/><circle cx="16" cy="18" r="5"/></svg>
+                <p id="previewMessage">カメラを準備しています…</p>
+                <p id="photoStatus">カメラの利用を許可してください。</p>
             </div>
-            <section class="photo-controls" aria-label="撮影の設定と操作">
-                <p id="photoStatus" class="photo-status" role="status" aria-live="polite">カメラの利用を許可してください。</p>
-                <fieldset id="photoOptions" disabled>
-                    <legend>写真をカスタマイズ</legend>
-                    <label for="frameSelect">フレーム</label>
-                    <select id="frameSelect">
-                        <option value="insta">インスタ風</option>
-                        <option value="x">X風</option>
-                        <option value="original">オリジナル</option>
-                    </select>
-                    <label for="poseSelect">ぎだにゃん</label>
-                    <select id="poseSelect">
-                        <option value="pose1">ポーズ1：おすわり</option>
-                        <option value="pose2">ポーズ2：手をふる</option>
-                        <option value="none">非表示</option>
-                    </select>
-                    <button id="switchCamera" class="photo-button secondary" type="button">前後のカメラを切り替え</button>
-                </fieldset>
-                <button id="captureButton" class="photo-button primary" type="button" disabled>撮影する</button>
-                <button id="retryCamera" class="photo-button primary" type="button" hidden>カメラを起動する</button>
-                <div id="resultActions" class="result-actions" hidden>
-                    <a id="savePhoto" class="photo-button primary" download="gidanyan-photo.png">写真を保存</a>
-                    <button id="sharePhoto" class="photo-button secondary" type="button" hidden>共有・写真に保存</button>
-                    <button id="retakeButton" class="photo-button secondary" type="button">撮り直す</button>
-                    <p class="save-note">保存先は端末・ブラウザによって異なります。画像を長押しして保存することもできます。</p>
-                </div>
-                <p class="photo-note">フレーム・イラストは仮デザインです。<br>写真はこの端末内で作成され、サーバーへ送信されません。</p>
-            </section>
+            <p id="resultNotice" class="result-notice" hidden></p>
         </div>
-        <noscript><p class="photo-status">撮影にはJavaScriptを有効にしてください。</p></noscript>
+        <section class="photo-controls" aria-label="撮影の設定と操作">
+            <div id="photoOptions" class="photo-options">
+                <fieldset class="choice-group" disabled>
+                    <legend class="sr-only">フレーム</legend>
+                    <label class="photo-choice">
+                        <input type="radio" name="frame" value="insta" aria-label="インスタ風" checked>
+                        <span class="choice-face"><img src="images/photo/frame-insta.svg" alt="" class="frame-thumbnail"></span>
+                    </label>
+                    <label class="photo-choice">
+                        <input type="radio" name="frame" value="x" aria-label="X風">
+                        <span class="choice-face"><img src="images/photo/frame-x.svg" alt="" class="frame-thumbnail"></span>
+                    </label>
+                    <label class="photo-choice">
+                        <input type="radio" name="frame" value="original" aria-label="オリジナル">
+                        <span class="choice-face"><img src="images/photo/frame-original.svg" alt="" class="frame-thumbnail"></span>
+                    </label>
+                </fieldset>
+                <fieldset class="choice-group" disabled>
+                    <legend class="sr-only">ぎだにゃんのポーズ</legend>
+                    <label class="photo-choice">
+                        <input type="radio" name="pose" value="pose1" aria-label="おすわり" checked>
+                        <span class="choice-face"><img src="images/photo/pose-1.svg" alt=""></span>
+                    </label>
+                    <label class="photo-choice">
+                        <input type="radio" name="pose" value="pose2" aria-label="手をふる">
+                        <span class="choice-face"><img src="images/photo/pose-2.svg" alt=""></span>
+                    </label>
+                    <label class="photo-choice">
+                        <input type="radio" name="pose" value="none" aria-label="ぎだにゃんを非表示">
+                        <span class="choice-face"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m6.4 6.4 11.2 11.2"/></svg></span>
+                    </label>
+                </fieldset>
+            </div>
+            <div id="cameraActions" class="camera-actions">
+                <button id="switchCamera" class="photo-button switch-camera" type="button" aria-label="前後のカメラを切り替え" disabled>
+                    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 10h6l3-4h6l3 4h6v17H4z"/><path d="M11 16a5 5 0 0 1 8-1l2 2m0-4v4h-4M21 21a5 5 0 0 1-8 1l-2-2m0 4v-4h4"/></svg>
+                </button>
+                <button id="captureButton" class="photo-button primary" type="button" disabled>撮影</button>
+                <button id="retryCamera" class="photo-button primary" type="button" hidden>起動</button>
+            </div>
+            <div id="resultActions" class="result-actions" hidden>
+                <button id="retakeButton" class="photo-button" type="button">撮り直し</button>
+                <button id="sharePhoto" class="photo-button" type="button" hidden>共有</button>
+                <a id="savePhoto" class="photo-button primary" download="gidanyan-photo.png">保存</a>
+            </div>
+        </section>
+        <p id="announcement" class="sr-only" role="status" aria-live="polite"></p>
+        <noscript><p class="noscript-message">撮影にはJavaScriptを有効にしてください。</p></noscript>
     </main>
+    <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
+        <div class="help-heading">
+            <h2 id="helpTitle">遊び方</h2>
+            <form method="dialog"><button class="help-button" autofocus>閉じる</button></form>
+        </div>
+        <ol>
+            <li>カメラの利用を許可します。停止中は「起動」を押してください。</li>
+            <li>左の3枚でフレーム、右の3つでポーズを選びます。斜線のマークはぎだにゃんの非表示です。</li>
+            <li>カメラの矢印マークで前後を切り替え、「撮影」を押します。</li>
+            <li>「保存」で画像をダウンロード。「共有」や画像の長押しでも保存できます。「撮り直し」で再撮影できます。</li>
+        </ol>
+        <p>保存先や共有機能は端末・ブラウザによって異なります。</p>
+        <p>フレーム・イラストは仮デザインです。写真は端末内で作成され、サーバーへ送信されません。</p>
+        <p class="help-credit">© 第78回岐阜大学祭実行委員会</p>
+    </dialog>
     <video id="cameraVideo" class="camera-source" autoplay muted playsinline aria-hidden="true"></video>
-    <footer>© 第78回岐阜大学祭実行委員会</footer>
 </body>
 </html>
