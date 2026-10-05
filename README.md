@@ -1,4 +1,8 @@
 # 走れ！ ぎだにゃん！ — website
+
+## サイトURL
+https://github.com/1zuminmin/gidanyan-runner_website/blob/main/README.md
+
 # Unity WebGL 新ビルド適用手順
 
 ## 1. UnityでWebGLビルドを作成する
