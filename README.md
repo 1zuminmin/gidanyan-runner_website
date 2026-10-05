@@ -1,7 +1,7 @@
 # 走れ！ ぎだにゃん！ — website
 
 ## サイトURL
-https://github.com/1zuminmin/gidanyan-runner_website/blob/main/index.html
+https://1zuminmin.github.io/gidanyan-runner_website/index.html
 
 # Unity WebGL 新ビルド適用手順
 
