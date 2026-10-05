@@ -94,6 +94,69 @@ test('ぎだにゃんフォト: browser integration', async t => {
         assert.equal(layout.oneRow, true, 'live controls stay on one row');
     };
 
+    await t.test('frames overlay a fixed camera crop, including borderless and translucent artwork', async () => {
+        const { page, errors } = await open();
+        try {
+            await page.goto(base);
+            const results = await page.evaluate(async () => {
+                const { loadPhotoAssets, renderPhoto, PHOTO_WIDTH: width, PHOTO_HEIGHT: height } = await import('/photo-renderer.mjs');
+                const assets = await loadPhotoAssets();
+                const source = document.createElement('canvas');
+                source.width = source.videoWidth = 640;
+                source.height = source.videoHeight = 480;
+                const sourceCtx = source.getContext('2d');
+                const pattern = sourceCtx.createImageData(640, 480);
+                for (let y = 0; y < 480; y++) for (let x = 0; x < 640; x++) {
+                    const i = (y * 640 + x) * 4;
+                    pattern.data.set([Math.round(x * 255 / 639), Math.round(y * 255 / 479), (Math.floor(x / 24) + Math.floor(y / 24)) % 2 * 255, 255], i);
+                }
+                sourceCtx.putImageData(pattern, 0, 0);
+                const output = document.createElement('canvas');
+                output.width = width; output.height = height;
+                const ctx = output.getContext('2d', { willReadFrequently: true });
+                const overlay = document.createElement('canvas');
+                overlay.width = width; overlay.height = height;
+                const overlayCtx = overlay.getContext('2d', { willReadFrequently: true });
+                const decoration = document.createElement('canvas');
+                decoration.width = width; decoration.height = height;
+                const decorationCtx = decoration.getContext('2d');
+                decorationCtx.fillStyle = 'rgba(255, 128, 0, 0.5)';
+                decorationCtx.fillRect(20, 30, 110, 90);
+                const checks = [];
+                for (const mirror of [false, true]) {
+                    renderPhoto(ctx, source, assets, 'none', 'none', mirror);
+                    const baseline = ctx.getImageData(0, 0, width, height).data;
+                    for (const frame of ['insta', 'x', 'original', 'borderless']) {
+                        const artwork = frame === 'borderless' ? decoration : assets[frame];
+                        renderPhoto(ctx, source, { ...assets, borderless: artwork }, frame, 'none', mirror);
+                        const actual = ctx.getImageData(0, 0, width, height).data;
+                        overlayCtx.clearRect(0, 0, width, height);
+                        overlayCtx.drawImage(artwork, 0, 0, width, height);
+                        const layer = overlayCtx.getImageData(0, 0, width, height).data;
+                        let transparentPixels = 0, movedPixels = 0, blendErrors = 0;
+                        for (let i = 0; i < actual.length; i += 4) {
+                            if (layer[i + 3] === 0) {
+                                transparentPixels++;
+                                if ([0, 1, 2, 3].some(c => actual[i + c] !== baseline[i + c])) movedPixels++;
+                            } else if (layer[i + 3] < 255) {
+                                const alpha = layer[i + 3] / 255;
+                                if ([0, 1, 2].some(c => Math.abs(actual[i + c] - (layer[i + c] * alpha + baseline[i + c] * (1 - alpha))) > 2)) blendErrors++;
+                            }
+                        }
+                        checks.push({ frame, mirror, transparentPixels, movedPixels, blendErrors });
+                    }
+                }
+                return checks;
+            });
+            for (const result of results) {
+                assert.ok(result.transparentPixels > 1000);
+                assert.equal(result.movedPixels, 0, `${result.frame}, mirror=${result.mirror}: camera pixels match frame OFF exactly`);
+                assert.equal(result.blendErrors, 0, `${result.frame}: translucent pixels blend over the unchanged camera image`);
+            }
+            assert.deepEqual(errors, []);
+        } finally { await page.close(); }
+    });
+
     await t.test('home → 12 frame/pose combinations including OFF → PNG → retake → home; preview equals export', async () => {
         const { page, errors } = await open();
         try {

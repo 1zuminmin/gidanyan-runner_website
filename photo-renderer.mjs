@@ -1,11 +1,11 @@
-// All placeholder frames share a 1080 × 1440 artboard. Keep characters separate.
+// Frames are transparent overlays on a shared 1080 × 1440 artboard.
 export const PHOTO_WIDTH = 1080;
 export const PHOTO_HEIGHT = 1440;
 export const FRAMES = {
-    insta: { src: 'images/photo/frame-insta.svg', photo: { x: 48, y: 190, width: 984, height: 1060 } },
-    x: { src: 'images/photo/frame-x.svg', photo: { x: 48, y: 190, width: 984, height: 1060 } },
-    original: { src: 'images/photo/frame-original.svg', photo: { x: 48, y: 190, width: 984, height: 1060 } },
-    none: { src: null, photo: { x: 0, y: 0, width: PHOTO_WIDTH, height: PHOTO_HEIGHT } }
+    insta: { src: 'images/photo/frame-insta.svg' },
+    x: { src: 'images/photo/frame-x.svg' },
+    original: { src: 'images/photo/frame-original.svg' },
+    none: { src: null }
 };
 export const POSES = {
     pose1: 'images/photo/pose-1.svg',
@@ -33,15 +33,15 @@ export async function loadPhotoAssets() {
 
 // Preview and exported PNG use this same canvas, including crop and selfie mirroring.
 export function renderPhoto(ctx, video, assets, frameKey, poseKey, mirror) {
-    const area = FRAMES[frameKey].photo;
-    const crop = coverCrop(video.videoWidth, video.videoHeight, area.width, area.height);
+    // The camera crop stays fixed when frames change, including OFF.
+    const crop = coverCrop(video.videoWidth, video.videoHeight, PHOTO_WIDTH, PHOTO_HEIGHT);
     ctx.clearRect(0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
     ctx.save();
-    ctx.translate(area.x + (mirror ? area.width : 0), area.y);
+    ctx.translate(mirror ? PHOTO_WIDTH : 0, 0);
     ctx.scale(mirror ? -1 : 1, 1);
-    ctx.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, area.width, area.height);
+    ctx.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
     ctx.restore();
     if (frameKey !== 'none') ctx.drawImage(assets[frameKey], 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
     if (poseKey !== 'none') {
