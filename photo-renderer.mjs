@@ -4,7 +4,8 @@ export const PHOTO_HEIGHT = 1440;
 export const FRAMES = {
     insta: { src: 'images/photo/frame-insta.svg', photo: { x: 48, y: 190, width: 984, height: 1060 } },
     x: { src: 'images/photo/frame-x.svg', photo: { x: 48, y: 190, width: 984, height: 1060 } },
-    original: { src: 'images/photo/frame-original.svg', photo: { x: 48, y: 190, width: 984, height: 1060 } }
+    original: { src: 'images/photo/frame-original.svg', photo: { x: 48, y: 190, width: 984, height: 1060 } },
+    none: { src: null, photo: { x: 0, y: 0, width: PHOTO_WIDTH, height: PHOTO_HEIGHT } }
 };
 export const POSES = {
     pose1: 'images/photo/pose-1.svg',
@@ -21,7 +22,7 @@ export function coverCrop(sourceWidth, sourceHeight, targetWidth, targetHeight) 
 
 export async function loadPhotoAssets() {
     const assets = {};
-    await Promise.all([...Object.entries(FRAMES).map(([key, frame]) => [key, frame.src]), ...Object.entries(POSES)].map(async ([key, src]) => {
+    await Promise.all([...Object.entries(FRAMES).filter(([, frame]) => frame.src).map(([key, frame]) => [key, frame.src]), ...Object.entries(POSES)].map(async ([key, src]) => {
         const image = new Image();
         image.src = src;
         await image.decode();
@@ -42,7 +43,7 @@ export function renderPhoto(ctx, video, assets, frameKey, poseKey, mirror) {
     ctx.scale(mirror ? -1 : 1, 1);
     ctx.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, area.width, area.height);
     ctx.restore();
-    ctx.drawImage(assets[frameKey], 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+    if (frameKey !== 'none') ctx.drawImage(assets[frameKey], 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
     if (poseKey !== 'none') {
         const { x, y, width, height } = POSE_AREA;
         ctx.drawImage(assets[poseKey], x, y, width, height);

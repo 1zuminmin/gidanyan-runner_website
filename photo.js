@@ -5,7 +5,8 @@ const video = byId('cameraVideo');
 const canvas = byId('photoCanvas');
 const ctx = canvas.getContext('2d');
 const photoOptions = byId('photoOptions');
-const selected = name => document.querySelector(`input[name="${name}"]:checked`).value;
+const selected = name => byId(`${name}Button`).value;
+const choices = { frame: ['insta', 'x', 'original', 'none'], pose: ['pose1', 'pose2', 'none'] };
 const status = byId('photoStatus');
 const cover = byId('previewCover');
 const capturedPhoto = byId('capturedPhoto');
@@ -33,8 +34,8 @@ function setStatus(message, error = false) {
 
 function setPhase(next) {
     phase = next;
-    photoOptions.querySelectorAll('fieldset').forEach(group => { group.disabled = next !== 'live'; });
-    photoOptions.hidden = ['capturing', 'captured'].includes(next);
+    photoOptions.querySelectorAll('button').forEach(button => { button.disabled = next !== 'live'; });
+    byId('liveControls').hidden = ['capturing', 'captured'].includes(next);
     byId('switchCamera').disabled = next !== 'live';
     byId('cameraActions').hidden = ['capturing', 'captured'].includes(next);
     captureButton.disabled = next !== 'live';
@@ -184,7 +185,20 @@ byId('switchCamera').addEventListener('click', () => {
     facing = facing === 'user' ? 'environment' : 'user';
     startCamera();
 });
-photoOptions.addEventListener('change', () => { if (phase === 'live') draw(); });
+for (const [name, values] of Object.entries(choices)) {
+    const button = byId(`${name}Button`);
+    button.addEventListener('click', () => {
+        if (phase !== 'live') return;
+        const index = (values.indexOf(button.value) + 1) % values.length;
+        button.value = values[index];
+        const count = button.value === 'none' ? 'OFF' : `${index + 1} / ${values.length - 1}`;
+        const label = name === 'frame' ? 'フレーム' : 'ポーズ';
+        byId(`${name}Count`).textContent = count;
+        button.setAttribute('aria-label', `${label}：${count}。押すと切り替え`);
+        byId('announcement').textContent = `${label}：${count}`;
+        draw();
+    });
+}
 byId('helpButton').addEventListener('click', () => helpDialog.showModal());
 helpDialog.addEventListener('click', event => {
     const bounds = helpDialog.getBoundingClientRect();

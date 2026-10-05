@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#f5f5f5">
     <title>ぎだにゃんフォト | 走れ！ぎだにゃん！</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="photo.css">
     <script type="module" src="photo.js"></script>
@@ -19,51 +22,26 @@
             <canvas id="photoCanvas" width="1080" height="1440" role="img" aria-label="フレームとぎだにゃんを重ねた撮影プレビュー"></canvas>
             <img id="capturedPhoto" alt="撮影したぎだにゃんフォト" hidden>
             <div id="previewCover" class="preview-cover">
-                <svg class="preview-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 10h6l3-4h6l3 4h6v17H4z"/><circle cx="16" cy="18" r="5"/></svg>
                 <p id="previewMessage">カメラを準備しています…</p>
                 <p id="photoStatus">カメラの利用を許可してください。</p>
             </div>
             <p id="resultNotice" class="result-notice" hidden></p>
         </div>
         <section class="photo-controls" aria-label="撮影の設定と操作">
-            <div id="photoOptions" class="photo-options">
-                <fieldset class="choice-group" disabled>
-                    <legend class="sr-only">フレーム</legend>
-                    <label class="photo-choice">
-                        <input type="radio" name="frame" value="insta" aria-label="インスタ風" checked>
-                        <span class="choice-face"><img src="images/photo/frame-insta.svg" alt="" class="frame-thumbnail"></span>
-                    </label>
-                    <label class="photo-choice">
-                        <input type="radio" name="frame" value="x" aria-label="X風">
-                        <span class="choice-face"><img src="images/photo/frame-x.svg" alt="" class="frame-thumbnail"></span>
-                    </label>
-                    <label class="photo-choice">
-                        <input type="radio" name="frame" value="original" aria-label="オリジナル">
-                        <span class="choice-face"><img src="images/photo/frame-original.svg" alt="" class="frame-thumbnail"></span>
-                    </label>
-                </fieldset>
-                <fieldset class="choice-group" disabled>
-                    <legend class="sr-only">ぎだにゃんのポーズ</legend>
-                    <label class="photo-choice">
-                        <input type="radio" name="pose" value="pose1" aria-label="おすわり" checked>
-                        <span class="choice-face"><img src="images/photo/pose-1.svg" alt=""></span>
-                    </label>
-                    <label class="photo-choice">
-                        <input type="radio" name="pose" value="pose2" aria-label="手をふる">
-                        <span class="choice-face"><img src="images/photo/pose-2.svg" alt=""></span>
-                    </label>
-                    <label class="photo-choice">
-                        <input type="radio" name="pose" value="none" aria-label="ぎだにゃんを非表示">
-                        <span class="choice-face"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m6.4 6.4 11.2 11.2"/></svg></span>
-                    </label>
-                </fieldset>
-            </div>
-            <div id="cameraActions" class="camera-actions">
-                <button id="switchCamera" class="photo-button switch-camera" type="button" aria-label="前後のカメラを切り替え" disabled>
-                    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 10h6l3-4h6l3 4h6v17H4z"/><path d="M11 16a5 5 0 0 1 8-1l2 2m0-4v4h-4M21 21a5 5 0 0 1-8 1l-2-2m0 4v-4h4"/></svg>
-                </button>
-                <button id="captureButton" class="photo-button primary" type="button" disabled>撮影</button>
-                <button id="retryCamera" class="photo-button primary" type="button" hidden>起動</button>
+            <div id="liveControls" class="live-controls">
+                <div id="photoOptions" class="photo-options" role="group" aria-label="フレームとポーズの設定">
+                    <button id="frameButton" class="photo-button option-button" type="button" value="insta" aria-label="フレーム：1 / 3。押すと切り替え" disabled>
+                        <span>フレーム</span><small id="frameCount">1 / 3</small>
+                    </button>
+                    <button id="poseButton" class="photo-button option-button" type="button" value="pose1" aria-label="ポーズ：1 / 2。押すと切り替え" disabled>
+                        <span>ポーズ</span><small id="poseCount">1 / 2</small>
+                    </button>
+                </div>
+                <button id="switchCamera" class="photo-button switch-camera" type="button" aria-label="前後のカメラを切り替え" disabled><span>前後<br>切替</span></button>
+                <div id="cameraActions" class="camera-actions">
+                    <button id="captureButton" class="photo-button primary" type="button" disabled>撮影</button>
+                    <button id="retryCamera" class="photo-button primary" type="button" hidden>起動</button>
+                </div>
             </div>
             <div id="resultActions" class="result-actions" hidden>
                 <button id="retakeButton" class="photo-button" type="button">撮り直し</button>
@@ -81,8 +59,8 @@
         </div>
         <ol>
             <li>カメラの利用を許可します。停止中は「起動」を押してください。</li>
-            <li>左の3枚でフレーム、右の3つでポーズを選びます。斜線のマークはぎだにゃんの非表示です。</li>
-            <li>カメラの矢印マークで前後を切り替え、「撮影」を押します。</li>
+            <li>「フレーム」を押すたびに3種類→OFF、「ポーズ」を押すたびに2種類→OFFの順に切り替わります。OFFの次は最初に戻ります。</li>
+            <li>「前後切替」でカメラを切り替え、「撮影」を押します。</li>
             <li>「保存」で画像をダウンロード。「共有」や画像の長押しでも保存できます。「撮り直し」で再撮影できます。</li>
         </ol>
         <p>保存先や共有機能は端末・ブラウザによって異なります。</p>

@@ -67,12 +67,21 @@ test('ぎだにゃんフォト: browser integration', async t => {
 
     const waitLive = page => page.waitForFunction(() => !document.querySelector('#captureButton').disabled);
     const stopped = page => page.evaluate(() => window.photoTest.streams.every(stream => stream.getTracks().every(track => track.readyState === 'ended')));
+    const selectChoice = async (page, name, value) => {
+        const button = page.locator(`#${name}Button`);
+        for (let step = 0; step < 4 && await button.getAttribute('value') !== value; step++) await button.click();
+        assert.equal(await button.getAttribute('value'), value);
+        if (value === 'none') assert.equal(await page.textContent(`#${name}Count`), 'OFF');
+    };
     const assertFits = async page => {
         const layout = await page.evaluate(() => {
             const visible = element => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden';
-            const controls = [...document.querySelectorAll('.photo-header a, .photo-header button, .photo-controls button, .photo-controls a, .choice-face')].filter(visible);
+            const controls = [...document.querySelectorAll('.photo-header a, .photo-header button, .photo-controls button, .photo-controls a')].filter(visible);
+            const liveButtons = [...document.querySelectorAll('#liveControls button')].filter(visible).map(element => element.getBoundingClientRect());
             return {
                 overflow: document.documentElement.scrollHeight > innerHeight || document.documentElement.scrollWidth > innerWidth,
+                tooSmall: controls.filter(element => { const r = element.getBoundingClientRect(); return r.width < 44 || r.height < 44; }).map(element => element.id),
+                oneRow: liveButtons.length === 0 || Math.max(...liveButtons.map(r => r.top)) - Math.min(...liveButtons.map(r => r.top)) <= 4,
                 clipped: controls.filter(element => {
                     const r = element.getBoundingClientRect();
                     return r.top < 0 || r.left < 0 || r.bottom > innerHeight + 1 || r.right > innerWidth + 1;
@@ -81,21 +90,25 @@ test('ぎだにゃんフォト: browser integration', async t => {
         });
         assert.equal(layout.overflow, false, 'the main screen needs no scrolling');
         assert.deepEqual(layout.clipped, [], 'all controls remain visible');
+        assert.deepEqual(layout.tooSmall, [], 'touch targets stay at least 44px');
+        assert.equal(layout.oneRow, true, 'live controls stay on one row');
     };
 
-    await t.test('home → 9 frame/pose combinations → PNG → retake → home; preview equals export', async () => {
+    await t.test('home → 12 frame/pose combinations including OFF → PNG → retake → home; preview equals export', async () => {
         const { page, errors } = await open();
         try {
             await page.goto(base);
+            assert.match(await page.locator('a[href="photo.html"]').textContent(), /おまけ：ぎだにゃんと記念撮影！/);
+            if (process.env.PHOTO_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, 'photo-home.png'), fullPage: true });
             await page.getByRole('link', { name: /ぎだにゃんフォト/ }).click();
             await waitLive(page);
             assert.equal(await page.evaluate(() => window.photoTest.requests[0].audio), false);
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
             assert.equal(await page.evaluate(() => document.querySelector('#captureButton').getBoundingClientRect().bottom <= innerHeight), true, 'mobile shutter fits in the viewport');
-            for (const frame of ['insta', 'x', 'original']) {
+            for (const frame of ['insta', 'x', 'original', 'none']) {
                 for (const pose of ['pose1', 'pose2', 'none']) {
-                    await page.locator(`.photo-choice:has(input[name="frame"][value="${frame}"])`).click();
-                    await page.locator(`.photo-choice:has(input[name="pose"][value="${pose}"])`).click();
+                    await selectChoice(page, 'frame', frame);
+                    await selectChoice(page, 'pose', pose);
                     await page.click('#captureButton');
                     await page.waitForFunction(() => !document.querySelector('#resultActions').hidden);
                     assert.equal(await stopped(page), true);
@@ -109,10 +122,17 @@ test('ぎだにゃんフォト: browser integration', async t => {
                         ctx.drawImage(image, 0, 0);
                         const actual = ctx.getImageData(0, 0, result.width, result.height).data;
                         const expected = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+                        const right = Array.from(ctx.getImageData(880, 500, 1, 1).data);
+                        const posePixels = ctx.getImageData(690, 855, 300, 360).data;
+                        let poseDifferences = 0;
+                        for (let i = 0; i < posePixels.length; i += 4) {
+                            if ([0, 1, 2].some(c => Math.abs(posePixels[i + c] - right[c]) > 8)) poseDifferences++;
+                        }
                         return { width: image.width, height: image.height, type: blob.type,
                             equal: actual.every((v, i) => v === expected[i]),
                             left: Array.from(ctx.getImageData(200, 500, 1, 1).data),
-                            right: Array.from(ctx.getImageData(880, 500, 1, 1).data) };
+                            right, poseDifferences,
+                            corners: [[0, 0], [1079, 0], [0, 1439], [1079, 1439]].map(([x, y]) => Array.from(ctx.getImageData(x, y, 1, 1).data)) };
                     });
                     assert.equal(result.width, 1080);
                     assert.equal(result.height, 1440);
@@ -120,7 +140,14 @@ test('ぎだにゃんフォト: browser integration', async t => {
                     assert.equal(result.equal, true);
                     assert.ok(result.left[2] > result.left[0], 'selfie: blue is mirrored to the left');
                     assert.ok(result.right[0] > result.right[2], 'selfie: red is mirrored to the right');
-                    if (frame === 'original' && pose === 'pose2') {
+                    if (frame === 'none') {
+                        result.corners.forEach((pixel, i) => {
+                            assert.equal(pixel[3], 255);
+                            assert.ok(i % 2 === 0 ? pixel[2] > pixel[0] : pixel[0] > pixel[2], 'frame OFF fills every corner with camera pixels');
+                        });
+                        assert.equal(result.poseDifferences > 0, pose !== 'none', 'pose selection stays independent of frame OFF');
+                    }
+                    if (frame === 'none' && pose === 'none') {
                         const [download] = await Promise.all([page.waitForEvent('download'), page.click('#savePhoto')]);
                         assert.match(download.suggestedFilename(), /^gidanyan-photo-.*\.png$/);
                         assert.equal(await download.failure(), null);
@@ -128,10 +155,16 @@ test('ぎだにゃんフォト: browser integration', async t => {
                     }
                     await page.click('#retakeButton');
                     await waitLive(page);
-                    assert.equal(await page.inputValue('input[name="frame"]:checked'), frame);
-                    assert.equal(await page.inputValue('input[name="pose"]:checked'), pose);
+                    assert.equal(await page.getAttribute('#frameButton', 'value'), frame);
+                    assert.equal(await page.getAttribute('#poseButton', 'value'), pose);
                 }
             }
+            await page.locator('#frameButton').press('Enter');
+            await page.locator('#poseButton').press('Space');
+            assert.equal(await page.getAttribute('#frameButton', 'value'), 'insta', 'frame wraps from OFF to first');
+            assert.equal(await page.getAttribute('#poseButton', 'value'), 'pose1', 'pose wraps from OFF to first');
+            assert.equal(await page.textContent('#frameCount'), '1 / 3');
+            assert.equal(await page.textContent('#poseCount'), '1 / 2');
             await page.setViewportSize({ width: 1280, height: 900 });
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
             if (process.env.PHOTO_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, 'photo-desktop.png'), fullPage: true });
