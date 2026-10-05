@@ -163,7 +163,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
             await page.goto(base);
             assert.match(await page.locator('a[href="photo.html"]').textContent(), /おまけ：ぎだにゃんと記念撮影！/);
             if (process.env.PHOTO_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, 'photo-home.png'), fullPage: true });
-            await page.getByRole('link', { name: /ぎだにゃんフォト/ }).click();
+            await page.getByRole('link', { name: /PHOTO/ }).click();
             await waitLive(page);
             assert.equal(await page.evaluate(() => window.photoTest.requests[0].audio), false);
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
