@@ -1,5 +1,8 @@
 # 走れ！ ぎだにゃん！ — website
 
+## サイトURL
+https://1zuminmin.github.io/gidanyan-runner_website/index.html
+
 ## ぎだにゃんフォト（試作）
 
 ホームの「PHOTO」から `photo.html` へ移動するとカメラの利用を要求します。フレーム3種・OFFと、ポーズ2種・OFFを選び、撮影後にPNG保存または撮り直しができます。対応端末では共有メニューから写真への保存もできます。写真・映像のアップロード処理はありません。
@@ -219,10 +222,13 @@ Windowsでは大文字・小文字が違っていても動く場合があるが�
 | ページ | 表示 | Unityシーン |
 |---|---|---|
 | `stage1.html` | Easy | `Easy.unity` |
-| `stage2.html` | Normal | 現在の `Main.unity` |
-| `stage3.html` | Hard（準備中） | 未実装のため起動しない |
+| `stage2.html` | Normal | `Normal.unity` |
+| `stage3.html` | Hard | `Hard.unity` |
+| `stage4.html` | EX（おまけ） | `Special.unity` |
 
-EasyとNormalは既存の4ページの漫画を共用します。ページの`data-difficulty`を`script.js`が読み、iframeのURLへ`difficulty=easy`または`difficulty=normal`を付けます。URL・漫画の画像ファイル名は従来のstage番号を維持しています。
+4ステージは既存の4ページの漫画と1つのUnityビルドを共用します。ページの`data-difficulty`を`script.js`が読み、iframeのURLへ`difficulty=easy`／`normal`／`hard`／`ex`を付けます。既存ページのURL・漫画の画像ファイル名は維持しています。
+
+2026年10月7日時点でUnityのNormal・Hard・SpecialはMainの複製で、ゲーム内容・設定も共通です。各ボタンはそれぞれの専用シーンへ接続しますが、難易度の調整はUnity側の今後の作業です。
 
 ゲーム中はPCでも、画面上でマウスを押したまま上下左右へ動かして離すとスワイプできます。左右でレーン移動、上でジャンプ、下でスライドします。
 
@@ -230,11 +236,11 @@ EasyとNormalは既存の4ページの漫画を共用します。ページの`da
 
 Unity側ではWebBootstrap → 対象シーンの順に読み込みます。`game/launch.js`はUnity本体と対象シーンの両方の準備完了を待ってから親ページへ通知します。難易度・読み込みID・送信元が一致した通知だけでPLAYを有効にします。失敗時は同じ難易度で再試行します。
 
-ゲームへの直接アクセスで難易度を省略した場合はNormalです。Hard・空文字・不明な難易度はエラーを表示し、別の難易度を代わりに起動しません。
+ゲームへの直接アクセスで難易度を省略した場合はNormalです。空文字・不明な難易度はエラーを表示し、別の難易度を代わりに起動しません。
 
 ### 接続に対応したビルドの作成
 
-Unity側の `Tools > Gidanyan Runner > Build Web (Easy and Normal)` を使い、WebBootstrap・Easy・Mainを含むビルドを作成します。従来のMainのみのビルドは準備完了通知に対応していないため使用できません。
+Unity側の `Tools > Gidanyan Runner > Build Web (All Stages)` を使い、WebBootstrap・Easy・Normal・Hard・Specialを含むビルドを作成します。従来のMainのみのビルドは準備完了通知に対応していないため使用できません。
 
 `Builds/WebDifficulty/Build`内の4ファイルを上記の名前へそろえて`game/Build`へコピーし、`StreamingAssets`も`game/StreamingAssets`へ反映します。初回および接続処理の更新時は、ビルド出力の`launch.js`も`game/launch.js`へコピーします。元ファイルはUnity側の`Assets/WebGLTemplates/GidanyanMobile/launch.js`です。Web独自の`game/index.html`は維持してください。
 
@@ -242,4 +248,4 @@ Unity側の `Tools > Gidanyan Runner > Build Web (Easy and Normal)` を使い、
 
 ### 検証
 
-`node --test tests/difficulty.test.mjs`で漫画を優先する取得順、低速時のページ送り、画像の失敗・タイムアウト・再試行、Unity準備完了の順序、難易度の一致を確認できます。HTTPサーバー上ではEasyとNormalで漫画→PLAY→ゲーム開始、Hardで準備中とBACK、スマートフォン幅の表示を確認します。
+`node --test tests/difficulty.test.mjs`で漫画を優先する取得順、低速時のページ送り、画像の失敗・タイムアウト・再試行、全4ステージのUnity準備完了の順序、選択したステージの一致を確認できます。HTTPサーバー上では全4ステージで漫画→PLAY→ゲーム開始、スマートフォン幅の表示を確認します。

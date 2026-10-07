@@ -14,7 +14,7 @@ let unityState = "idle";
 let unityLoadId = 0;
 let unityLoadTimeout;
 
-const UNITY_URL = "./game/index.html?v=20261002-swipe1";
+const UNITY_URL = "./game/index.html?v=20261007-stages1";
 const UNITY_MESSAGE_SOURCE = "gidanyan-unity";
 const UNITY_LOAD_TIMEOUT_MS = 180000;
 const MANGA_LOAD_TIMEOUT_MS = 60000;
