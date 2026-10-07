@@ -21,7 +21,8 @@ function startGidanyanGame(config, loaderUrl) {
         notifyParent("error", status.textContent);
     };
 
-    if (!["easy", "normal"].includes(difficulty)) {
+    const stageLabels = { easy: "Easy", normal: "Normal", hard: "Hard", ex: "EX" };
+    if (!Object.hasOwn(stageLabels, difficulty)) {
         fail("この難易度はまだ遊べません。難易度選択へ戻ってください。");
         return;
     }
@@ -53,7 +54,7 @@ function startGidanyanGame(config, loaderUrl) {
         if (finished) return;
         finished = true;
         window.clearTimeout(timeout);
-        status.textContent = `${difficulty === "easy" ? "Easy" : "Normal"}の準備ができました`;
+        status.textContent = `${stageLabels[difficulty]}の準備ができました`;
         loading.classList.add("hidden");
         loading.setAttribute("aria-hidden", "true");
         document.querySelector("#fullscreen").onclick = () => instance.SetFullscreen(1);

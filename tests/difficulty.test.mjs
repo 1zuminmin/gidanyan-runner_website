@@ -5,7 +5,22 @@ import test from "node:test";
 
 const launcher = readFileSync(new URL("../game/launch.js", import.meta.url), "utf8");
 const pageScript = readFileSync(new URL("../script.js", import.meta.url), "utf8");
+const stageLabels = { easy: "Easy", normal: "Normal", hard: "Hard", ex: "EX" };
 const tick = () => new Promise(resolve => setImmediate(resolve));
+
+test("all stage links open pages that pass the selected stage to the shared loader", () => {
+    const selection = readFileSync(new URL("../stage-select.html", import.meta.url), "utf8");
+    Object.entries(stageLabels).forEach(([difficulty, label], index) => {
+        const page = `stage${index + 1}.html`;
+        assert.ok(selection.includes(`href="${page}"`));
+        const html = readFileSync(new URL(`../${page}`, import.meta.url), "utf8");
+        assert.ok(html.includes(`data-difficulty="${difficulty}"`));
+        assert.ok(html.includes(`data-difficulty-label="${label}"`));
+        assert.match(html, /id="unityFrame"/);
+        assert.match(html, /src="script\.js\?v=/);
+    });
+    assert.doesNotMatch(selection, /準備中/);
+});
 
 function element() {
     const classes = new Set();
@@ -38,7 +53,7 @@ function environment(difficulty = "easy", { manualImages = false } = {}) {
         parent: { postMessage: message => messages.push(message) },
         setTimeout(fn, delay) { const id = ++timerId; timerDelays.set(id, delay); timers.set(id, () => { timers.delete(id); timerDelays.delete(id); fn(); }); return id; },
         clearTimeout(id) { timers.delete(id); timerDelays.delete(id); }, addEventListener(type, fn) { this[type] = fn; } };
-    const document = { body: { dataset: { difficulty, difficultyLabel: difficulty === "easy" ? "Easy" : "Normal" }, appendChild: script => scripts.push(script) },
+    const document = { body: { dataset: { difficulty, difficultyLabel: stageLabels[difficulty] }, appendChild: script => scripts.push(script) },
         querySelector: get, getElementById: id => get(`#${id}`), createElement: element, addEventListener() {} };
     const context = { window, document, URL, URLSearchParams, console, Image: makeImage, createUnityInstance: async () => ({ SetFullscreen() {} }) };
     return { context, window, get, messages, scripts, timers, timerDelays, decodeRequests };
@@ -50,7 +65,7 @@ function launch(difficulty) {
     return env;
 }
 
-for (const difficulty of ["easy", "normal"]) {
+for (const difficulty of Object.keys(stageLabels)) {
     test(`${difficulty}: loader completion alone cannot enable PLAY`, async () => {
         const e = launch(difficulty);
         e.scripts[0].onload();
@@ -60,6 +75,7 @@ for (const difficulty of ["easy", "normal"]) {
         await tick();
         assert.equal(e.messages[0].type, "ready");
         assert.equal(e.messages[0].difficulty, difficulty);
+        assert.equal(e.get("#status").textContent, `${stageLabels[difficulty]}の準備ができました`);
         assert.equal(e.timers.size, 0);
     });
 }
@@ -83,7 +99,7 @@ test("a mismatched scene is an error", async () => {
     assert.equal(e.get("#loading").classList.contains("hidden"), false);
 });
 
-for (const difficulty of ["hard", "unknown", ""]) {
+for (const difficulty of ["unknown", "", "toString", "constructor", "__proto__"]) {
     test(`${difficulty || "empty"}: unsupported selection starts no download`, () => {
         const e = launch(difficulty);
         assert.equal(e.scripts.length, 0);
@@ -116,7 +132,7 @@ test("download failures and timeouts report error, never late ready", async () =
     }
 });
 
-for (const difficulty of ["easy", "normal"]) {
+for (const difficulty of Object.keys(stageLabels)) {
     test(`${difficulty}: page navigation, message validation and retry keep the selection`, async () => {
         const e = environment(difficulty);
         runInNewContext(pageScript, e.context);
@@ -127,7 +143,7 @@ for (const difficulty of ["easy", "normal"]) {
         assert.equal(e.get("#pageNumber").textContent, "4 / 4");
         assert.equal(button.disabled, true);
         const message = { source: frame.contentWindow, origin: "http://localhost", data: { source: "gidanyan-unity", difficulty, type: "ready", loadId: "1" } };
-        for (const change of [{ source: {} }, { origin: "http://unrelated.test" }, { data: { ...message.data, loadId: "0" } }, { data: { ...message.data, difficulty: "hard" } }, { data: { ...message.data, type: "unrelated" } }]) {
+        for (const change of [{ source: {} }, { origin: "http://unrelated.test" }, { data: { ...message.data, loadId: "0" } }, { data: { ...message.data, difficulty: difficulty === "hard" ? "ex" : "hard" } }, { data: { ...message.data, type: "unrelated" } }]) {
             e.window.message({ ...message, ...change });
             assert.equal(button.disabled, true);
             assert.equal(e.timers.size, 1);
