@@ -3,22 +3,16 @@
 ## サイトURL
 https://1zuminmin.github.io/gidanyan-runner_website/index.html
 
-## ぎだにゃんフォト（試作）
+## ファイル構成
 
-ホームの「PHOTO」から `photo.html` へ移動するとカメラの利用を要求します。フレーム3種・OFFと、ポーズ2種・OFFを選び、撮影後にPNG保存または撮り直しができます。対応端末では共有メニューから写真への保存もできます。写真・映像のアップロード処理はありません。
+- `index.html`：ホーム
+- `game/`：難易度選択、各ステージ、ゲーム用CSS・JavaScript、漫画、Unityビルド
+- `assets/css/`：共通の基本スタイル・ボタン、ホーム用のスタイル
+- `images/`：ホームなどサイト共通の画像
+- `photo/`：おまけの撮影画面、CSS・JavaScript、フレーム・ポーズ素材
+- `tests/`：ゲームとフォトの動作確認
 
-- カメラはHTTPSまたはlocalhostで利用してください。スマートフォンからPCのHTTPのLANアドレスへアクセスしてもカメラは使えません。
-- 写真は1080×1440px（3:4）です。カメラ映像を3:4の全面に合わせて中央で切り取り、自撮りカメラだけ左右反転します。映像の倍率・位置・切り取り範囲はフレームの種類やOFFにかかわらず固定し、その上にポーズ、フレームの順で重ねます。ぎだにゃんはフレームの下に入り、プレビューと保存は同じCanvasを使います。
-- カード仕立てのフレームは周囲5％の余白、角丸、外側の薄い影を付けて重ねます。素材の縦横比と透過部分を維持し、保存PNGにも同じ仕上がりを反映します。`FRAME_CARD` が配置・角丸の設定です。画面の黒枠は3:4の写真に沿って収まり、保存画像には含まれません。
-- 角丸カードの外側の映像だけをぼかします。内側の透明部分は鮮明なまま、保存PNGにも同じ処理を反映し、フレームOFFではぼかしも解除します。180×240pxの作業画像でぼかしを計算するため、Canvasの`filter`機能には依存しません。
-- 撮影画面は端末の表示領域に収まり、下部1列に「フレーム／ポーズ」「前後切替」「撮影」の3組を配置します。フレーム・ポーズは文字ボタンを押すたびに順送りし、最後のOFFの次は最初に戻ります。フレームOFFではフレームレイヤーだけを非表示にし、ポーズは独立して選べます。横向きの低い画面では操作を右側に配置します。右上の「遊び方」で説明を開けます。
-- 撮影完了、ホームへ戻る、ページを離れる、タブを隠すタイミングでカメラを停止します。タブへ戻った場合は「起動」で再開します。
-- 「保存」はブラウザのダウンロードです。保存先は端末によって異なります。撮影後の画像を長押しする方法も利用できます。
-- インスタ風・X風フレームは制作済みの `images/photo/frame-insta.png` / `frame-x.png` を使用します。オリジナルフレームとポーズは仮素材です。残りの素材も透過PNG等へ差し替え、`photo-renderer.mjs` の `FRAMES` / `POSES` のパスを変更してください。フレームは1080×1440pxの透過キャンバスに自由に配置し、映像を見せる部分は透明にします。外枠や写真窓の指定は不要で、半透明の装飾も使えます。ポーズは共通の300×360pxの透明キャンバスを想定し、`POSE_AREA` で配置します。
-
-既存テストは `node --test tests/difficulty.test.mjs`。撮影機能のブラウザテストはPlaywrightとChromeを使い、`node --test tests/photo.browser.mjs` で実行します（必要なら `npm install --no-save --package-lock=false playwright`、Edgeを使う場合は環境変数 `PHOTO_TEST_BROWSER=msedge`）。ブラウザテストはテスト用映像のみを使用し、実際のカメラを起動しません。
-
-実機ではiPhoneのSafari・AndroidのChromeで、許可、前後カメラ切替、保存／長押し保存、撮り直し、ホームへの復帰を確認してください。
+以前の `stage1.html` などのステージURLと `photo.html` は、GitHub Pagesの `404.html` から新しい場所へ案内します。ローカルで旧URLを確認する場合も、404時にこのHTMLを返すサーバーが必要です。
 
 # Unity WebGL 新ビルド適用手順
 
@@ -89,18 +83,18 @@ YYYYMMDD-HHmm
 20260930-1530
 ```
 
-### `script.js`を変更する
+### `game/script.js`を変更する
 
 次の行を探す。
 
 ```javascript
-const UNITY_URL = "./game/index.html?v=20260925-1609";
+const UNITY_URL = "./index.html?v=20260925-1609";
 ```
 
 末尾のバージョンを今回の値へ変更する。
 
 ```javascript
-const UNITY_URL = "./game/index.html?v=20260930-1530";
+const UNITY_URL = "./index.html?v=20260930-1530";
 ```
 
 ### `game/index.html`を変更する
@@ -111,13 +105,13 @@ const UNITY_URL = "./game/index.html?v=20260930-1530";
 const buildVersion = "20260925-1609";
 ```
 
-`script.js`と同じ値へ変更する。
+`game/script.js`と同じ値へ変更する。
 
 ```javascript
 const buildVersion = "20260930-1530";
 ```
 
-`script.js`と`game/index.html`のバージョンは、必ず同じ値にする。
+`game/script.js`と`game/index.html`のバージョンは、必ず同じ値にする。
 
 ## 5. 変更内容を確認する
 
@@ -136,18 +130,18 @@ game/Build/unity.framework.js.unityweb
 game/Build/unity.loader.js
 game/Build/unity.wasm.unityweb
 game/index.html
-script.js
+game/script.js
 ```
 
 ビルドによって内容が変わらなかったファイルは、変更一覧に表示されない場合がある。
 
-`game/index.html`と`script.js`については、基本的にキャッシュバージョン以外が変更されていないことを確認する。
+`game/index.html`と`game/script.js`については、基本的にキャッシュバージョン以外が変更されていないことを確認する。
 
 ## 6. ローカルで動作確認する
 
 HTMLファイルを直接ダブルクリックして開かないこと。
 
-Visual Studio CodeのLive Serverなど、HTTPサーバーを使用して `stage1.html` を開く。
+Visual Studio CodeのLive Serverなど、HTTPサーバーを使用して `game/stage1.html` を開く。
 
 以下の内容を確認する。
 
@@ -163,7 +157,7 @@ Visual Studio CodeのLive Serverなど、HTTPサーバーを使用して `stage1
 作業ブランチで次のコマンドを実行する。
 
 ```powershell
-git add game script.js
+git add game
 git commit -m "Unityビルドを更新"
 git push
 ```
@@ -176,7 +170,7 @@ GitHub Pagesの公開元は`main`ブランチのため、作業ブランチへ�
 
 公開URL：
 
-https://1zuminmin.github.io/gidanyan-runner_website/stage1.html
+https://1zuminmin.github.io/gidanyan-runner_website/game/stage1.html
 
 マージ後、公開ページへ反映されるまで数分かかる場合がある。
 
@@ -195,7 +189,7 @@ https://1zuminmin.github.io/gidanyan-runner_website/stage1.html
 
 ### 古いゲームが表示される
 
-`script.js`と`game/index.html`のキャッシュバージョンが更新されているか確認する。
+`game/script.js`と`game/index.html`のキャッシュバージョンが更新されているか確認する。
 
 2か所には必ず同じ値を設定する。
 
@@ -221,12 +215,12 @@ Windowsでは大文字・小文字が違っていても動く場合があるが�
 
 | ページ | 表示 | Unityシーン |
 |---|---|---|
-| `stage1.html` | Easy | `Easy.unity` |
-| `stage2.html` | Normal | `Normal.unity` |
-| `stage3.html` | Hard | `Hard.unity` |
-| `stage4.html` | EX（おまけ） | `Special.unity` |
+| `game/stage1.html` | Easy | `Easy.unity` |
+| `game/stage2.html` | Normal | `Normal.unity` |
+| `game/stage3.html` | Hard | `Hard.unity` |
+| `game/stage4.html` | EX（おまけ） | `Special.unity` |
 
-4ステージは既存の4ページの漫画と1つのUnityビルドを共用します。ページの`data-difficulty`を`script.js`が読み、iframeのURLへ`difficulty=easy`／`normal`／`hard`／`ex`を付けます。既存ページのURL・漫画の画像ファイル名は維持しています。
+4ステージは既存の4ページの漫画と1つのUnityビルドを共用します。ページの`data-difficulty`を`game/script.js`が読み、iframeのURLへ`difficulty=easy`／`normal`／`hard`／`ex`を付けます。ステージページと漫画は `game/` 以下にまとめています。
 
 2026年10月7日時点でUnityのNormal・Hard・SpecialはMainの複製で、ゲーム内容・設定も共通です。各ボタンはそれぞれの専用シーンへ接続しますが、難易度の調整はUnity側の今後の作業です。
 
@@ -244,8 +238,27 @@ Unity側の `Tools > Gidanyan Runner > Build Web (All Stages)` を使い、WebBo
 
 `Builds/WebDifficulty/Build`内の4ファイルを上記の名前へそろえて`game/Build`へコピーし、`StreamingAssets`も`game/StreamingAssets`へ反映します。初回および接続処理の更新時は、ビルド出力の`launch.js`も`game/launch.js`へコピーします。元ファイルはUnity側の`Assets/WebGLTemplates/GidanyanMobile/launch.js`です。Web独自の`game/index.html`は維持してください。
 
-`script.js`のUNITY_URL、`game/index.html`のbuildVersion、およびlaunch.jsを読み込むURLのバージョンを更新します。
+`game/script.js`のUNITY_URL、`game/index.html`のbuildVersion、およびlaunch.jsを読み込むURLのバージョンを更新します。
 
 ### 検証
 
 `node --test tests/difficulty.test.mjs`で漫画を優先する取得順、低速時のページ送り、画像の失敗・タイムアウト・再試行、全4ステージのUnity準備完了の順序、選択したステージの一致を確認できます。HTTPサーバー上では全4ステージで漫画→PLAY→ゲーム開始、スマートフォン幅の表示を確認します。
+
+`node --test tests/structure.test.mjs`でHTMLから参照するファイルの存在を確認します。PlaywrightとChromeを使う `node --test tests/game.browser.mjs` では、GitHub Pagesと同じサブディレクトリ構成でホーム→難易度選択→漫画→PLAY→戻るの遷移、画像・CSSの取得、旧URLからの移動を確認します。このテストではUnity本体を代用するため、ゲーム本体の実機確認は別に行ってください。
+
+## おまけ：ぎだにゃんフォト（試作）
+
+ホームの「PHOTO」から `photo/index.html` へ移動するとカメラの利用を要求します。フレーム3種・OFFと、ポーズ2種・OFFを選び、撮影後にPNG保存または撮り直しができます。対応端末では共有メニューから写真への保存もできます。写真・映像のアップロード処理はありません。
+
+- カメラはHTTPSまたはlocalhostで利用してください。スマートフォンからPCのHTTPのLANアドレスへアクセスしてもカメラは使えません。
+- 写真は1080×1440px（3:4）です。カメラ映像を3:4の全面に合わせて中央で切り取り、自撮りカメラだけ左右反転します。映像の倍率・位置・切り取り範囲はフレームの種類やOFFにかかわらず固定し、その上にポーズ、フレームの順で重ねます。ぎだにゃんはフレームの下に入り、プレビューと保存は同じCanvasを使います。
+- カード仕立てのフレームは周囲5％の余白、角丸、外側の薄い影を付けて重ねます。素材の縦横比と透過部分を維持し、保存PNGにも同じ仕上がりを反映します。`FRAME_CARD` が配置・角丸の設定です。画面の黒枠は3:4の写真に沿って収まり、保存画像には含まれません。
+- 角丸カードの外側の映像だけをぼかします。内側の透明部分は鮮明なまま、保存PNGにも同じ処理を反映し、フレームOFFではぼかしも解除します。180×240pxの作業画像でぼかしを計算するため、Canvasの`filter`機能には依存しません。
+- 撮影画面は端末の表示領域に収まり、下部1列に「フレーム／ポーズ」「前後切替」「撮影」の3組を配置します。フレーム・ポーズは文字ボタンを押すたびに順送りし、最後のOFFの次は最初に戻ります。フレームOFFではフレームレイヤーだけを非表示にし、ポーズは独立して選べます。横向きの低い画面では操作を右側に配置します。右上の「遊び方」で説明を開けます。
+- 撮影完了、ホームへ戻る、ページを離れる、タブを隠すタイミングでカメラを停止します。タブへ戻った場合は「起動」で再開します。
+- 「保存」はブラウザのダウンロードです。保存先は端末によって異なります。撮影後の画像を長押しする方法も利用できます。
+- インスタ風・X風フレームは制作済みの `photo/images/frame-insta.png` / `photo/images/frame-x.png` を使用します。オリジナルフレームとポーズは仮素材です。残りの素材も透過PNG等へ差し替え、`photo/photo-renderer.mjs` の `FRAMES` / `POSES` のパスを変更してください。フレームは1080×1440pxの透過キャンバスに自由に配置し、映像を見せる部分は透明にします。外枠や写真窓の指定は不要で、半透明の装飾も使えます。ポーズは共通の300×360pxの透明キャンバスを想定し、`POSE_AREA` で配置します。
+
+既存テストは `node --test tests/difficulty.test.mjs`。撮影機能のブラウザテストはPlaywrightとChromeを使い、`node --test tests/photo.browser.mjs` で実行します（必要なら `npm install --no-save --package-lock=false playwright`、Edgeを使う場合は環境変数 `PHOTO_TEST_BROWSER=msedge`）。ブラウザテストはテスト用映像のみを使用し、実際のカメラを起動しません。
+
+実機ではiPhoneのSafari・AndroidのChromeで、許可、前後カメラ切替、保存／長押し保存、撮り直し、ホームへの復帰を確認してください。

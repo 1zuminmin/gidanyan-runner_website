@@ -2,14 +2,14 @@
 export const PHOTO_WIDTH = 1080;
 export const PHOTO_HEIGHT = 1440;
 export const FRAMES = {
-    insta: { src: 'images/photo/frame-insta.png' },
-    x: { src: 'images/photo/frame-x.png' },
-    original: { src: 'images/photo/frame-original.svg' },
+    insta: { src: 'images/frame-insta.png' },
+    x: { src: 'images/frame-x.png' },
+    original: { src: 'images/frame-original.svg' },
     none: { src: null }
 };
 export const POSES = {
-    pose1: 'images/photo/pose-1.svg',
-    pose2: 'images/photo/pose-2.svg'
+    pose1: 'images/pose-1.svg',
+    pose2: 'images/pose-2.svg'
 };
 export const POSE_AREA = { x: 690, y: 855, width: 300, height: 360 };
 // Inset the artwork 5% on each side; corners appear as 20px at a 360px preview.
@@ -130,7 +130,7 @@ export async function loadPhotoAssets() {
     const assets = {};
     await Promise.all([...Object.entries(FRAMES).filter(([, frame]) => frame.src).map(([key, frame]) => [key, frame.src]), ...Object.entries(POSES)].map(async ([key, src]) => {
         const image = new Image();
-        image.src = src;
+        image.src = new URL(src, import.meta.url);
         await image.decode();
         assets[key] = image;
     }));

@@ -1,159 +1,4 @@
-/* ========================================
-   基本設定
-======================================== */
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    min-height: 100vh;
-
-    background: #f5f5f5;
-    color: #222222;
-
-    text-align: center;
-
-    font-family:
-        "M PLUS Rounded 1c",
-        "Yu Gothic",
-        "Hiragino Sans",
-        "Meiryo",
-        sans-serif;
-}
-
-
-main {
-    width: 90%;
-    max-width: 500px;
-
-    margin: 30px auto;
-    padding-bottom: 30px;
-}
-
-
-/* ========================================
-   index.html：タイトルバナー
-======================================== */
-
-header {
-    width: 100%;
-    padding: 20px 0;
-}
-
-.game-title-logo {
-    display: block;
-    width: 90%;
-    max-width: 700px;
-    height: auto;
-    margin: 0 auto;
-}
-
-
-/* ========================================
-   index.html：ゲーム説明
-======================================== */
-
-.description-box {
-    min-height: 220px;
-
-    margin-bottom: 35px;
-    padding: 20px;
-
-    background: #ffffff;
-
-    border: 4px dashed #000000;
-    border-radius: 20px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.description-box h2 {
-    margin-bottom: 15px;
-
-    color: #ff9800;
-}
-
-.description-box p {
-    line-height: 1.8;
-}
-
-
-/* ========================================
-   ぎだにゃん風共通ボタン
-======================================== */
-
-.button-area,
-.stage-button-area {
-    margin-bottom: 40px;
-
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-.gida-btn {
-    position: relative;
-
-    font-family: inherit;
-
-    width: 100%;
-    max-width: 380px;
-    min-height: 90px;
-
-    margin: 0 auto;
-    padding: 18px 70px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    background: #ffffff;
-    color: #ff9800;
-
-    border: 6px solid #000000;
-    border-radius: 999px;
-
-    text-decoration: none;
-
-    cursor: pointer;
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        background-color 0.2s ease;
-}
-
-.gida-btn:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 0 #ff9800;
-    background: #fffaf2;
-}
-
-.gida-btn:focus-visible {
-    outline: 5px solid #ffd28a;
-    outline-offset: 5px;
-}
-
-.gida-btn:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 #ff9800;
-}
-
-.gida-btn:disabled {
-    transform: none;
-    box-shadow: none;
-    cursor: wait;
-}
-
+/* ゲーム読み込み状態 */
 .gida-btn.is-loading {
     background: #eeeeee;
     border-color: #777777;
@@ -171,40 +16,6 @@ header {
 .gida-btn.is-error .btn-text {
     color: #b42318;
 }
-
-.btn-text {
-    color: #ff9800;
-
-    font-size: 1.8rem;
-    font-weight: 800;
-    letter-spacing: 1px;
-
-    white-space: nowrap;
-}
-
-.paw {
-    position: absolute;
-    left: 25px;
-
-    font-size: 1.8rem;
-    line-height: 1;
-}
-
-.gida-btn.photo-entry { padding: 6px 20px; }
-.button-area .btn-text { line-height: 1.25; }
-.photo-entry .btn-text small { display: block; margin-top: 4px; color: #666; font-size: 0.75rem; line-height: 1.4; letter-spacing: 0; }
-
-.spark {
-    position: absolute;
-    top: 12px;
-    right: 25px;
-
-    color: #ff9800;
-
-    font-size: 1rem;
-    line-height: 1;
-}
-
 
 /* ========================================
    BACKボタン
@@ -227,38 +38,6 @@ header {
     font-size: 2rem;
     font-weight: 800;
     line-height: 1;
-}
-
-
-/* ========================================
-   index.html：ダミーバナー
-======================================== */
-
-.banner-box {
-    min-height: 140px;
-
-    margin-bottom: 20px;
-    padding: 20px;
-
-    background: #ffffff;
-
-    border: 4px dashed #000000;
-    border-radius: 25px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.banner-box h3 {
-    margin-bottom: 10px;
-
-    color: #ff9800;
-}
-
-.banner-box p {
-    color: #666666;
 }
 
 
@@ -354,53 +133,9 @@ header {
 }
 
 
-/* ========================================
-   フッター
-======================================== */
-
-footer {
-    margin-top: 20px;
-    padding: 20px;
-
-    color: #666666;
-
-    font-size: 0.9rem;
-}
-
-
-/* ========================================
-   スマートフォン向け
-======================================== */
-
 @media (max-width: 500px) {
-
-    main {
-        width: 92%;
-        margin-top: 20px;
-    }
-
     .stage-title h1 {
         font-size: 1.7rem;
-    }
-
-    .gida-btn {
-        min-height: 80px;
-        padding-right: 55px;
-        padding-left: 55px;
-    }
-
-    .btn-text {
-        font-size: clamp(1.1rem, 5.6vw, 1.35rem);
-    }
-
-    .paw {
-        left: 18px;
-        font-size: 1.5rem;
-    }
-
-    .spark {
-        top: 11px;
-        right: 18px;
     }
 
     .back-arrow {
@@ -436,7 +171,7 @@ footer {
 }
 
 /* =========================
-   Easy / Normal ゲームページ
+   全ステージ共通の漫画・ゲーム画面
 ========================= */
 
 .manga-box {

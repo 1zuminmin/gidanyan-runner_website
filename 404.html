@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ページの移動 | 走れ！ぎだにゃん！</title>
+    <script>
+        // GitHub Pages serves this file for old bookmarks after the folder move.
+        const movedPages = {
+            'stage-select.html': 'game/stage-select.html',
+            'stage1.html': 'game/stage1.html',
+            'stage2.html': 'game/stage2.html',
+            'stage3.html': 'game/stage3.html',
+            'stage4.html': 'game/stage4.html',
+            'photo.html': 'photo/index.html'
+        };
+        const filename = location.pathname.split('/').pop();
+        if (Object.hasOwn(movedPages, filename)) {
+            const destination = new URL(movedPages[filename], location.href);
+            destination.search = location.search;
+            destination.hash = location.hash;
+            location.replace(destination.href);
+        }
+    </script>
+</head>
+<body>
+    <h1>ページが移動したか、見つかりません。</h1>
+    <p><a href="index.html">ホームへ戻る</a></p>
+</body>
+</html>
