@@ -43,6 +43,11 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 const paint = () => {
                     ctx.fillStyle = '#e03c31'; ctx.fillRect(0, 0, 320, 480);
                     ctx.fillStyle = '#2468d6'; ctx.fillRect(320, 0, 320, 480);
+                    if (mode === 'detail') {
+                        ctx.fillStyle = '#dfd5c7'; ctx.fillRect(0, 0, 640, 480);
+                        ctx.fillStyle = '#607c88';
+                        for (let x = 0; x < 640; x += 24) ctx.fillRect(x, 0, 12, 480);
+                    }
                 };
                 paint();
                 const stream = source.captureStream(15);
@@ -148,7 +153,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
                         for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
                             // Inside the card, even translucent artwork must leave the camera
                             // unchanged. The outer band is tested separately for corners/shadow.
-                            if (frame !== 'borderless' && (x < 116 || x >= 964 || y < 134 || y >= 1306)) continue;
+                            if (x < 116 || x >= 964 || y < 134 || y >= 1306) continue;
                             const i = (y * width + x) * 4;
                             if (layer[i + 3] === 0) {
                                 transparentPixels++;
@@ -199,6 +204,73 @@ test('ぎだにゃんフォト: browser integration', async t => {
             assert.notDeepEqual(results.geometry.margin, [255, 0, 255, 255], 'camera remains visible around the card');
             assert.ok(results.geometry.shadow[1] < results.geometry.shadowBaseline[1], 'a subtle shadow appears below the card');
             assert.equal(results.geometry.offMatches, true, 'frame OFF removes both artwork and shadow');
+            assert.deepEqual(errors, []);
+        } finally { await page.close(); }
+    });
+
+    await t.test('only the rounded card exterior is blurred; OFF, live updates and sharp poses are preserved', async () => {
+        const { page, errors } = await open('detail');
+        try {
+            await page.goto(base);
+            const checks = await page.evaluate(async () => {
+                const { renderPhoto, PHOTO_WIDTH: width, PHOTO_HEIGHT: height } = await import('/photo-renderer.mjs');
+                const makeCanvas = () => Object.assign(document.createElement('canvas'), { width, height });
+                const source = makeCanvas();
+                source.videoWidth = width; source.videoHeight = height;
+                const sourceCtx = source.getContext('2d');
+                sourceCtx.fillStyle = '#282828'; sourceCtx.fillRect(0, 0, width, height);
+                sourceCtx.fillStyle = '#dcdcdc';
+                for (let x = 12; x < width; x += 24) sourceCtx.fillRect(x, 0, 12, height);
+                const output = makeCanvas();
+                const ctx = output.getContext('2d', { willReadFrequently: true });
+                const pose = makeCanvas();
+                const poseCtx = pose.getContext('2d');
+                poseCtx.fillStyle = '#ff00ff'; poseCtx.fillRect(0, 0, width, height);
+                // Transparent artwork isolates the blur mask from any frame artwork/shadow.
+                const assets = { probe: makeCanvas(), pose1: pose };
+                const render = (frame, mirror, pose = 'none') => {
+                    renderPhoto(ctx, source, assets, frame, pose, mirror);
+                    return ctx.getImageData(0, 0, width, height).data;
+                };
+                const pixel = (data, x, y) => Array.from(data.slice((y * width + x) * 4, (y * width + x) * 4 + 4));
+                const results = [];
+                for (const mirror of [false, true]) {
+                    const baseline = render('none', mirror);
+                    const blurred = render('probe', mirror);
+                    let changedInside = 0;
+                    for (let y = 140; y < 1300; y++) for (let x = 120; x < 960; x++) {
+                        const i = (y * width + x) * 4;
+                        if ([0, 1, 2, 3].some(c => blurred[i + c] !== baseline[i + c])) changedInside++;
+                    }
+                    results.push({
+                        mirror, changedInside,
+                        // Includes a point inside the rectangular bounds but outside its rounded corner.
+                        outside: [[20, 720], [1060, 720], [540, 20], [540, 1420], [60, 78]].map(([x, y]) => ({
+                            before: pixel(baseline, x, y), after: pixel(blurred, x, y)
+                        })),
+                        offMatches: render('none', mirror).every((value, i) => value === baseline[i]),
+                        pose: pixel(render('probe', mirror, 'pose1'), 800, 1000)
+                    });
+                }
+                // A new source frame must replace the cached work image, including all four edges.
+                sourceCtx.fillStyle = '#4078b0'; sourceCtx.fillRect(0, 0, width, height);
+                const updated = render('probe', false);
+                return { results, edges: [[0, 0], [1079, 0], [0, 1439], [1079, 1439]].map(([x, y]) => pixel(updated, x, y)) };
+            });
+            for (const result of checks.results) {
+                assert.equal(result.changedInside, 0, `mirror=${result.mirror}: the entire card interior stays pixel-identical`);
+                for (const { before, after } of result.outside) {
+                    assert.ok(Math.abs(before[0] - after[0]) > 30, 'fine exterior stripes are softened');
+                    assert.ok(after[0] > 90 && after[0] < 170, 'blur reduces contrast without changing brightness');
+                    assert.equal(after[3], 255);
+                }
+                assert.equal(result.offMatches, true, 'OFF immediately restores the sharp camera at the same crop');
+                assert.deepEqual(result.pose, [255, 0, 255, 255], 'the character is drawn sharply above the blurred camera');
+            }
+            for (const edge of checks.edges) assert.deepEqual(edge, [64, 120, 176, 255], 'new frames update and edges do not darken');
+            await page.goto(`${base}/photo.html`);
+            await waitLive(page);
+            if (process.env.PHOTO_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, 'photo-blur-live.png'), fullPage: true });
             assert.deepEqual(errors, []);
         } finally { await page.close(); }
     });

@@ -15,6 +15,12 @@ export const POSE_AREA = { x: 690, y: 855, width: 300, height: 360 };
 // Inset the artwork 5% on each side; corners appear as 20px at a 360px preview.
 export const FRAME_CARD = { x: 54, y: 72, width: 972, height: 1296, radius: 60 };
 const frameLayers = new WeakMap();
+// Blur a small copy instead of reading full-resolution pixels on every frame.
+// Three box passes give a soft blur without relying on Canvas filter support.
+const BLUR_WIDTH = 180;
+const BLUR_HEIGHT = 240;
+const BLUR_RADIUS = 3;
+const blurBuffers = new WeakMap();
 
 function traceCard(ctx) {
     const { x, y, width, height, radius } = FRAME_CARD;
@@ -24,6 +30,60 @@ function traceCard(ctx) {
     ctx.arcTo(x, y + height, x, y, radius);
     ctx.arcTo(x, y, x + width, y, radius);
     ctx.closePath();
+}
+
+function blurPass(source, target, horizontal) {
+    const length = horizontal ? BLUR_WIDTH : BLUR_HEIGHT;
+    const lines = horizontal ? BLUR_HEIGHT : BLUR_WIDTH;
+    const stride = horizontal ? 4 : BLUR_WIDTH * 4;
+    const lineStride = horizontal ? BLUR_WIDTH * 4 : 4;
+    const samples = BLUR_RADIUS * 2 + 1;
+    for (let line = 0; line < lines; line++) {
+        const base = line * lineStride;
+        let red = 0, green = 0, blue = 0;
+        for (let offset = -BLUR_RADIUS; offset <= BLUR_RADIUS; offset++) {
+            const index = base + Math.max(0, Math.min(length - 1, offset)) * stride;
+            red += source[index]; green += source[index + 1]; blue += source[index + 2];
+        }
+        for (let position = 0; position < length; position++) {
+            const index = base + position * stride;
+            target[index] = red / samples;
+            target[index + 1] = green / samples;
+            target[index + 2] = blue / samples;
+            target[index + 3] = 255;
+            // Repeat edge pixels so the outside of the photograph never fades to black.
+            const add = base + Math.min(length - 1, position + BLUR_RADIUS + 1) * stride;
+            const remove = base + Math.max(0, position - BLUR_RADIUS) * stride;
+            red += source[add] - source[remove];
+            green += source[add + 1] - source[remove + 1];
+            blue += source[add + 2] - source[remove + 2];
+        }
+    }
+}
+
+function blurOutsideCard(ctx) {
+    let buffer = blurBuffers.get(ctx);
+    if (!buffer) {
+        const canvas = document.createElement('canvas');
+        canvas.width = BLUR_WIDTH;
+        canvas.height = BLUR_HEIGHT;
+        buffer = { canvas, ctx: canvas.getContext('2d', { willReadFrequently: true }), scratch: new Uint8ClampedArray(BLUR_WIDTH * BLUR_HEIGHT * 4) };
+        blurBuffers.set(ctx, buffer);
+    }
+    buffer.ctx.drawImage(ctx.canvas, 0, 0, BLUR_WIDTH, BLUR_HEIGHT);
+    const pixels = buffer.ctx.getImageData(0, 0, BLUR_WIDTH, BLUR_HEIGHT);
+    for (let pass = 0; pass < 3; pass++) {
+        blurPass(pixels.data, buffer.scratch, true);
+        blurPass(buffer.scratch, pixels.data, false);
+    }
+    buffer.ctx.putImageData(pixels, 0, 0);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+    traceCard(ctx);
+    ctx.clip('evenodd');
+    ctx.drawImage(buffer.canvas, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+    ctx.restore();
 }
 
 function frameLayer(image) {
@@ -89,9 +149,10 @@ export function renderPhoto(ctx, video, assets, frameKey, poseKey, mirror) {
     ctx.scale(mirror ? -1 : 1, 1);
     ctx.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
     ctx.restore();
-    if (frameKey !== 'none') ctx.drawImage(frameLayer(assets[frameKey]), 0, 0);
+    if (frameKey !== 'none') blurOutsideCard(ctx);
     if (poseKey !== 'none') {
         const { x, y, width, height } = POSE_AREA;
         ctx.drawImage(assets[poseKey], x, y, width, height);
     }
+    if (frameKey !== 'none') ctx.drawImage(frameLayer(assets[frameKey]), 0, 0);
 }
