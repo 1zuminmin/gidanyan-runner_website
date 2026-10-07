@@ -2,8 +2,8 @@
 export const PHOTO_WIDTH = 1080;
 export const PHOTO_HEIGHT = 1440;
 export const FRAMES = {
-    insta: { src: 'images/photo/frame-insta.svg' },
-    x: { src: 'images/photo/frame-x.svg' },
+    insta: { src: 'images/photo/frame-insta.png' },
+    x: { src: 'images/photo/frame-x.png' },
     original: { src: 'images/photo/frame-original.svg' },
     none: { src: null }
 };

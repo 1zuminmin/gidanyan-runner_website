@@ -172,6 +172,9 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 for (const pose of ['pose1', 'pose2', 'none']) {
                     await selectChoice(page, 'frame', frame);
                     await selectChoice(page, 'pose', pose);
+                    if (process.env.PHOTO_SCREENSHOT_DIR && ['insta', 'x'].includes(frame) && pose === 'none') {
+                        await page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, `photo-frame-${frame}.png`), fullPage: true });
+                    }
                     await page.click('#captureButton');
                     await page.waitForFunction(() => !document.querySelector('#resultActions').hidden);
                     assert.equal(await stopped(page), true);
@@ -296,12 +299,12 @@ test('ぎだにゃんフォト: browser integration', async t => {
     await t.test('asset failure recovers without opening the camera early', async () => {
         const { page, errors } = await open();
         try {
-            await page.route('**/frame-x.svg', route => route.abort());
+            await page.route('**/frame-x.png', route => route.abort());
             await page.goto(`${base}/photo.html`);
             await page.waitForFunction(() => !document.querySelector('#retryCamera').hidden);
             assert.match(await page.textContent('#photoStatus'), /フレーム画像/);
             assert.equal(await page.evaluate(() => window.photoTest.requests.length), 0);
-            await page.unroute('**/frame-x.svg');
+            await page.unroute('**/frame-x.png');
             await page.click('#retryCamera');
             await waitLive(page);
             assert.deepEqual(errors, []);
