@@ -48,6 +48,8 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 12px;
     width: 100%;
     max-width: 480px;
@@ -57,16 +59,19 @@
 
 .photo-preview {
     position: relative;
-    flex: 1;
+    flex: none;
     min-height: 0;
     min-width: 0;
+    box-sizing: content-box;
+    width: calc(100% - 8px);
+    aspect-ratio: 3 / 4;
     border: 4px solid #111;
     border-radius: 22px;
     background: #e6e6e6;
-    padding: 4px;
+    overflow: hidden;
 }
 
-/* Use the space left after the controls without cropping the frame. */
+/* The preview is sized to the photograph, so no letterbox sits inside the border. */
 .photo-preview canvas, .photo-preview > img {
     display: block;
     width: 100%;
@@ -142,7 +147,7 @@
 
 @media (orientation: landscape) and (max-height: 560px) {
     .photo-header { width: min(100%, 760px); min-height: 54px; padding-top: 4px; padding-bottom: 4px; }
-    .photo-main { max-width: 760px; flex-direction: row; align-items: stretch; }
+    .photo-main { max-width: 760px; flex-direction: row; }
     .photo-controls { width: min(55%, 360px); margin: auto 0; }
     .photo-button { font-size: 0.75rem; }
     .preview-cover { gap: 8px; padding: 12px; }

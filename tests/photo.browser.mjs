@@ -74,11 +74,19 @@ test('ぎだにゃんフォト: browser integration', async t => {
         if (value === 'none') assert.equal(await page.textContent(`#${name}Count`), 'OFF');
     };
     const assertFits = async page => {
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         const layout = await page.evaluate(() => {
             const visible = element => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden';
             const controls = [...document.querySelectorAll('.photo-header a, .photo-header button, .photo-controls button, .photo-controls a')].filter(visible);
             const liveButtons = [...document.querySelectorAll('#liveControls button')].filter(visible).map(element => element.getBoundingClientRect());
+            const preview = document.querySelector('.photo-preview');
+            const bounds = preview.getBoundingClientRect();
+            const border = getComputedStyle(preview);
+            const contentWidth = bounds.width - parseFloat(border.borderLeftWidth) - parseFloat(border.borderRightWidth);
+            const contentHeight = bounds.height - parseFloat(border.borderTopWidth) - parseFloat(border.borderBottomWidth);
             return {
+                photoRatio: contentWidth / contentHeight,
+                previewFits: bounds.top >= 0 && bounds.left >= 0 && bounds.bottom <= innerHeight + 1 && bounds.right <= innerWidth + 1,
                 overflow: document.documentElement.scrollHeight > innerHeight || document.documentElement.scrollWidth > innerWidth,
                 tooSmall: controls.filter(element => { const r = element.getBoundingClientRect(); return r.width < 44 || r.height < 44; }).map(element => element.id),
                 oneRow: liveButtons.length === 0 || Math.max(...liveButtons.map(r => r.top)) - Math.min(...liveButtons.map(r => r.top)) <= 4,
@@ -92,6 +100,8 @@ test('ぎだにゃんフォト: browser integration', async t => {
         assert.deepEqual(layout.clipped, [], 'all controls remain visible');
         assert.deepEqual(layout.tooSmall, [], 'touch targets stay at least 44px');
         assert.equal(layout.oneRow, true, 'live controls stay on one row');
+        assert.ok(Math.abs(layout.photoRatio - 3 / 4) < 0.001, 'black preview border fits the 3:4 photograph without letterboxing');
+        assert.equal(layout.previewFits, true, 'the full photograph remains visible');
     };
 
     await t.test('frames overlay a fixed camera crop, including borderless and translucent artwork', async () => {
@@ -116,12 +126,12 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 const ctx = output.getContext('2d', { willReadFrequently: true });
                 const overlay = document.createElement('canvas');
                 overlay.width = width; overlay.height = height;
-                const overlayCtx = overlay.getContext('2d', { willReadFrequently: true });
+                const overlayCtx = overlay.getContext('2d');
                 const decoration = document.createElement('canvas');
                 decoration.width = width; decoration.height = height;
                 const decorationCtx = decoration.getContext('2d');
                 decorationCtx.fillStyle = 'rgba(255, 128, 0, 0.5)';
-                decorationCtx.fillRect(20, 30, 110, 90);
+                decorationCtx.fillRect(400, 500, 110, 90);
                 const checks = [];
                 for (const mirror of [false, true]) {
                     renderPhoto(ctx, source, assets, 'none', 'none', mirror);
@@ -131,28 +141,64 @@ test('ぎだにゃんフォト: browser integration', async t => {
                         renderPhoto(ctx, source, { ...assets, borderless: artwork }, frame, 'none', mirror);
                         const actual = ctx.getImageData(0, 0, width, height).data;
                         overlayCtx.clearRect(0, 0, width, height);
-                        overlayCtx.drawImage(artwork, 0, 0, width, height);
+                        overlayCtx.drawImage(artwork, width * 0.05, height * 0.05, width * 0.9, height * 0.9);
                         const layer = overlayCtx.getImageData(0, 0, width, height).data;
-                        let transparentPixels = 0, movedPixels = 0, blendErrors = 0;
-                        for (let i = 0; i < actual.length; i += 4) {
+                        let transparentPixels = 0, movedPixels = 0, blendedPixels = 0, blendErrors = 0;
+                        const blendSamples = [];
+                        for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+                            // Inside the card, even translucent artwork must leave the camera
+                            // unchanged. The outer band is tested separately for corners/shadow.
+                            if (frame !== 'borderless' && (x < 116 || x >= 964 || y < 134 || y >= 1306)) continue;
+                            const i = (y * width + x) * 4;
                             if (layer[i + 3] === 0) {
                                 transparentPixels++;
                                 if ([0, 1, 2, 3].some(c => actual[i + c] !== baseline[i + c])) movedPixels++;
                             } else if (layer[i + 3] < 255) {
+                                // SVG/bitmap edge antialiasing can differ across canvas backends.
+                                // Verify alpha blending in flat translucent areas, away from edges.
+                                if (![i - 4, i + 4, i - width * 4, i + width * 4].every(neighbor =>
+                                    [0, 1, 2, 3].every(c => layer[neighbor + c] === layer[i + c]))) continue;
+                                blendedPixels++;
                                 const alpha = layer[i + 3] / 255;
-                                if ([0, 1, 2].some(c => Math.abs(actual[i + c] - (layer[i + c] * alpha + baseline[i + c] * (1 - alpha))) > 2)) blendErrors++;
+                                if ([0, 1, 2].some(c => Math.abs(actual[i + c] - (layer[i + c] * alpha + baseline[i + c] * (1 - alpha))) > 2)) {
+                                    blendErrors++;
+                                    if (blendSamples.length < 2) blendSamples.push({ x, y, actual: Array.from(actual.slice(i, i + 4)), layer: Array.from(layer.slice(i, i + 4)), baseline: Array.from(baseline.slice(i, i + 4)) });
+                                }
                             }
                         }
-                        checks.push({ frame, mirror, transparentPixels, movedPixels, blendErrors });
+                        checks.push({ frame, mirror, transparentPixels, movedPixels, blendedPixels, blendErrors, blendSamples });
                     }
                 }
-                return checks;
+                // A solid test card makes its 5% inset, rounded corner, and outer shadow
+                // measurable without depending on the supplied artwork's opaque areas.
+                const solid = document.createElement('canvas');
+                solid.width = width; solid.height = height;
+                const solidCtx = solid.getContext('2d');
+                solidCtx.fillStyle = '#ff00ff'; solidCtx.fillRect(0, 0, width, height);
+                renderPhoto(ctx, source, assets, 'none', 'none', false);
+                const baseline = ctx.getImageData(0, 0, width, height).data;
+                renderPhoto(ctx, source, { ...assets, solid }, 'solid', 'none', false);
+                const pixel = (x, y) => Array.from(ctx.getImageData(x, y, 1, 1).data);
+                const geometry = {
+                    insetTop: pixel(540, 90), roundedCorner: pixel(60, 78),
+                    margin: pixel(20, 720), shadow: pixel(540, 1380),
+                    shadowBaseline: Array.from(baseline.slice((1380 * width + 540) * 4, (1380 * width + 540) * 4 + 4))
+                };
+                renderPhoto(ctx, source, assets, 'none', 'none', false);
+                geometry.offMatches = ctx.getImageData(0, 0, width, height).data.every((value, i) => value === baseline[i]);
+                return { checks, geometry };
             });
-            for (const result of results) {
+            for (const result of results.checks) {
                 assert.ok(result.transparentPixels > 1000);
                 assert.equal(result.movedPixels, 0, `${result.frame}, mirror=${result.mirror}: camera pixels match frame OFF exactly`);
-                assert.equal(result.blendErrors, 0, `${result.frame}: translucent pixels blend over the unchanged camera image`);
+                assert.equal(result.blendErrors, 0, `${result.frame}: translucent pixels blend over the unchanged camera image; ${JSON.stringify(result.blendSamples)}`);
+                if (result.frame === 'borderless') assert.ok(result.blendedPixels > 100);
             }
+            assert.deepEqual(results.geometry.insetTop, [255, 0, 255, 255], 'the frame lies inside a 5% margin');
+            assert.notDeepEqual(results.geometry.roundedCorner, [255, 0, 255, 255], 'the card corner is rounded');
+            assert.notDeepEqual(results.geometry.margin, [255, 0, 255, 255], 'camera remains visible around the card');
+            assert.ok(results.geometry.shadow[1] < results.geometry.shadowBaseline[1], 'a subtle shadow appears below the card');
+            assert.equal(results.geometry.offMatches, true, 'frame OFF removes both artwork and shadow');
             assert.deepEqual(errors, []);
         } finally { await page.close(); }
     });

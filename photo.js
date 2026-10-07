@@ -1,4 +1,4 @@
-import { loadPhotoAssets, renderPhoto } from './photo-renderer.mjs';
+import { loadPhotoAssets, renderPhoto, PHOTO_WIDTH, PHOTO_HEIGHT } from './photo-renderer.mjs';
 
 const byId = id => document.getElementById(id);
 const video = byId('cameraVideo');
@@ -15,6 +15,9 @@ const retryButton = byId('retryCamera');
 const shareButton = byId('sharePhoto');
 const saveLink = byId('savePhoto');
 const helpDialog = byId('helpDialog');
+const preview = document.querySelector('.photo-preview');
+const main = document.querySelector('.photo-main');
+const controls = document.querySelector('.photo-controls');
 let assets;
 let stream;
 let animation;
@@ -24,6 +27,25 @@ let facing = 'user';
 let mirror = true;
 let photoURL;
 let photoFile;
+
+function fitPreview() {
+    const style = getComputedStyle(main);
+    const border = getComputedStyle(preview);
+    let width = main.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    let height = main.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    if (style.flexDirection === 'row') width -= controls.offsetWidth + parseFloat(style.columnGap);
+    else height -= controls.offsetHeight + parseFloat(style.rowGap);
+    width -= parseFloat(border.borderLeftWidth) + parseFloat(border.borderRightWidth);
+    height -= parseFloat(border.borderTopWidth) + parseFloat(border.borderBottomWidth);
+    const photoWidth = Math.max(0, Math.min(width, height * PHOTO_WIDTH / PHOTO_HEIGHT));
+    preview.style.width = `${photoWidth}px`;
+    preview.style.height = `${photoWidth * PHOTO_HEIGHT / PHOTO_WIDTH}px`;
+}
+
+const previewSize = new ResizeObserver(fitPreview);
+previewSize.observe(main);
+previewSize.observe(controls);
+fitPreview();
 
 function setStatus(message, error = false) {
     status.textContent = message;
