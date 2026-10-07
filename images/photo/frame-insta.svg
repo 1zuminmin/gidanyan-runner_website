@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1440" viewBox="0 0 1080 1440">
+  <path fill="#fff" fill-rule="evenodd" d="M0 0H1080V1440H0Z M48 190V1250H1032V190Z"/>
+  <circle cx="101" cy="104" r="46" fill="#ffbd65" stroke="#dc6784" stroke-width="8"/>
+  <path d="M79 114V85L92 94L107 90L122 80V114Z" fill="#fff"/>
+  <g font-family="sans-serif" fill="#252525">
+    <text x="177" y="99" font-size="37" font-weight="700">gidanyan_photo</text>
+    <text x="177" y="145" font-size="25" fill="#777">Gifu University Festival</text>
+    <text x="68" y="1379" font-size="32" font-weight="700">きょうの思い出 #ぎだにゃん</text>
+  </g>
+  <g fill="#252525"><circle cx="948" cy="101" r="6"/><circle cx="970" cy="101" r="6"/><circle cx="992" cy="101" r="6"/></g>
+  <g stroke="#252525" stroke-width="7" fill="none" stroke-linejoin="round">
+    <path d="M66 1287C47 1265 18 1294 66 1328C114 1294 85 1265 66 1287Z" transform="translate(25 0)"/>
+    <path d="M159 1280H207V1317H185L170 1330V1317H159Z"/>
+    <path d="M250 1280L302 1300L278 1308L270 1330Z"/>
+    <path d="M962 1280H1002V1330L982 1316L962 1330Z"/>
+  </g>
+</svg>

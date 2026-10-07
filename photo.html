@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f5f5f5">
+    <title>ぎだにゃんフォト | 走れ！ぎだにゃん！</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="photo.css?v=20261007-card">
+    <script type="module" src="photo.js?v=20261007-outside-blur"></script>
+</head>
+<body class="photo-page">
+    <header class="photo-header">
+        <a id="homeLink" class="home-link" href="index.html">← ホーム</a>
+        <button id="helpButton" class="help-button" type="button" aria-haspopup="dialog" aria-controls="helpDialog">遊び方</button>
+    </header>
+    <main class="photo-main" aria-label="ぎだにゃんフォト">
+        <div class="photo-preview">
+            <canvas id="photoCanvas" width="1080" height="1440" role="img" aria-label="フレームとぎだにゃんを重ねた撮影プレビュー"></canvas>
+            <img id="capturedPhoto" alt="撮影したぎだにゃんフォト" hidden>
+            <div id="previewCover" class="preview-cover">
+                <p id="previewMessage">カメラを準備しています…</p>
+                <p id="photoStatus">カメラの利用を許可してください。</p>
+            </div>
+            <p id="resultNotice" class="result-notice" hidden></p>
+        </div>
+        <section class="photo-controls" aria-label="撮影の設定と操作">
+            <div id="liveControls" class="live-controls">
+                <div id="photoOptions" class="photo-options" role="group" aria-label="フレームとポーズの設定">
+                    <button id="frameButton" class="photo-button option-button" type="button" value="insta" aria-label="フレーム：1 / 3。押すと切り替え" disabled>
+                        <span>フレーム</span><small id="frameCount">1 / 3</small>
+                    </button>
+                    <button id="poseButton" class="photo-button option-button" type="button" value="pose1" aria-label="ポーズ：1 / 2。押すと切り替え" disabled>
+                        <span>ポーズ</span><small id="poseCount">1 / 2</small>
+                    </button>
+                </div>
+                <button id="switchCamera" class="photo-button switch-camera" type="button" aria-label="前後のカメラを切り替え" disabled><span>前後<br>切替</span></button>
+                <div id="cameraActions" class="camera-actions">
+                    <button id="captureButton" class="photo-button primary" type="button" disabled>撮影</button>
+                    <button id="retryCamera" class="photo-button primary" type="button" hidden>起動</button>
+                </div>
+            </div>
+            <div id="resultActions" class="result-actions" hidden>
+                <button id="retakeButton" class="photo-button" type="button">撮り直し</button>
+                <button id="sharePhoto" class="photo-button" type="button" hidden>共有</button>
+                <a id="savePhoto" class="photo-button primary" download="gidanyan-photo.png">保存</a>
+            </div>
+        </section>
+        <p id="announcement" class="sr-only" role="status" aria-live="polite"></p>
+        <noscript><p class="noscript-message">撮影にはJavaScriptを有効にしてください。</p></noscript>
+    </main>
+    <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
+        <div class="help-heading">
+            <h2 id="helpTitle">遊び方</h2>
+            <form method="dialog"><button class="help-button" autofocus>閉じる</button></form>
+        </div>
+        <ol>
+            <li>カメラの利用を許可します。停止中は「起動」を押してください。</li>
+            <li>「フレーム」を押すたびに3種類→OFF、「ポーズ」を押すたびに2種類→OFFの順に切り替わります。OFFの次は最初に戻ります。</li>
+            <li>「前後切替」でカメラを切り替え、「撮影」を押します。</li>
+            <li>「保存」で画像をダウンロード。「共有」や画像の長押しでも保存できます。「撮り直し」で再撮影できます。</li>
+        </ol>
+        <p>保存先や共有機能は端末・ブラウザによって異なります。</p>
+        <p>オリジナルフレームとポーズは仮デザインです。写真は端末内で作成され、サーバーへ送信されません。</p>
+        <p class="help-credit">© 第78回岐阜大学祭実行委員会</p>
+    </dialog>
+    <video id="cameraVideo" class="camera-source" autoplay muted playsinline aria-hidden="true"></video>
+</body>
+</html>

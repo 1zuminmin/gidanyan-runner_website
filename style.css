@@ -190,6 +190,10 @@ header {
     line-height: 1;
 }
 
+.gida-btn.photo-entry { padding: 6px 20px; }
+.button-area .btn-text { line-height: 1.25; }
+.photo-entry .btn-text small { display: block; margin-top: 4px; color: #666; font-size: 0.75rem; line-height: 1.4; letter-spacing: 0; }
+
 .spark {
     position: absolute;
     top: 12px;
@@ -386,7 +390,7 @@ footer {
     }
 
     .btn-text {
-        font-size: 1.35rem;
+        font-size: clamp(1.1rem, 5.6vw, 1.35rem);
     }
 
     .paw {
