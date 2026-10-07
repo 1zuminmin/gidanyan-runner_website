@@ -4,16 +4,16 @@ import { runInNewContext } from "node:vm";
 import test from "node:test";
 
 const launcher = readFileSync(new URL("../game/launch.js", import.meta.url), "utf8");
-const pageScript = readFileSync(new URL("../script.js", import.meta.url), "utf8");
+const pageScript = readFileSync(new URL("../game/script.js", import.meta.url), "utf8");
 const stageLabels = { easy: "Easy", normal: "Normal", hard: "Hard", ex: "EX" };
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
 test("all stage links open pages that pass the selected stage to the shared loader", () => {
-    const selection = readFileSync(new URL("../stage-select.html", import.meta.url), "utf8");
+    const selection = readFileSync(new URL("../game/stage-select.html", import.meta.url), "utf8");
     Object.entries(stageLabels).forEach(([difficulty, label], index) => {
         const page = `stage${index + 1}.html`;
         assert.ok(selection.includes(`href="${page}"`));
-        const html = readFileSync(new URL(`../${page}`, import.meta.url), "utf8");
+        const html = readFileSync(new URL(`../game/${page}`, import.meta.url), "utf8");
         assert.ok(html.includes(`data-difficulty="${difficulty}"`));
         assert.ok(html.includes(`data-difficulty-label="${label}"`));
         assert.match(html, /id="unityFrame"/);
@@ -49,7 +49,7 @@ function environment(difficulty = "easy", { manualImages = false } = {}) {
     initialImage.hidden = true;
     elements.set("#mangaImage", initialImage);
     get("#pageNumber").hidden = true;
-    const window = { location: { search: difficulty === null ? "" : `?difficulty=${difficulty}&loadId=1`, origin: "http://localhost", href: "http://localhost/stage1.html" },
+    const window = { location: { search: difficulty === null ? "" : `?difficulty=${difficulty}&loadId=1`, origin: "http://localhost", href: "http://localhost/gidanyan-runner_website/game/stage1.html" },
         parent: { postMessage: message => messages.push(message) },
         setTimeout(fn, delay) { const id = ++timerId; timerDelays.set(id, delay); timers.set(id, () => { timers.delete(id); timerDelays.delete(id); fn(); }); return id; },
         clearTimeout(id) { timers.delete(id); timerDelays.delete(id); }, addEventListener(type, fn) { this[type] = fn; } };
@@ -139,6 +139,7 @@ for (const difficulty of Object.keys(stageLabels)) {
         await tick();
         const button = e.get("#nextBtn"), frame = e.get("#unityFrame");
         assert.equal(new URL(frame.src).searchParams.get("difficulty"), difficulty);
+        assert.equal(new URL(frame.src).pathname, "/gidanyan-runner_website/game/index.html");
         button.click(); button.click(); button.click();
         assert.equal(e.get("#pageNumber").textContent, "4 / 4");
         assert.equal(button.disabled, true);

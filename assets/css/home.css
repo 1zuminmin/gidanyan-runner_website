@@ -1,0 +1,111 @@
+/* ========================================
+   index.html：タイトルバナー
+======================================== */
+
+header {
+    width: 100%;
+    padding: 20px 0;
+}
+
+.game-title-logo {
+    display: block;
+    width: 90%;
+    max-width: 700px;
+    height: auto;
+    margin: 0 auto;
+}
+
+
+/* ========================================
+   index.html：ゲーム説明
+======================================== */
+
+.description-box {
+    min-height: 220px;
+
+    margin-bottom: 35px;
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 4px dashed #000000;
+    border-radius: 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.description-box h2 {
+    margin-bottom: 15px;
+
+    color: #ff9800;
+}
+
+.description-box p {
+    line-height: 1.8;
+}
+
+
+/* ホームのPHOTOボタン */
+.gida-btn.photo-entry { padding: 6px 20px; }
+.button-area .btn-text { line-height: 1.25; }
+.photo-entry .btn-text small { display: block; margin-top: 4px; color: #666; font-size: 0.75rem; line-height: 1.4; letter-spacing: 0; }
+
+/* ========================================
+   index.html：ダミーバナー
+======================================== */
+
+.banner-box {
+    min-height: 140px;
+
+    margin-bottom: 20px;
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 4px dashed #000000;
+    border-radius: 25px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.banner-box h3 {
+    margin-bottom: 10px;
+
+    color: #ff9800;
+}
+
+.banner-box p {
+    color: #666666;
+}
+
+
+/* ========================================
+   フッター
+======================================== */
+
+footer {
+    margin-top: 20px;
+    padding: 20px;
+
+    color: #666666;
+
+    font-size: 0.9rem;
+}
+
+
+@media (max-width: 500px) {
+    .paw {
+        left: 18px;
+        font-size: 1.5rem;
+    }
+
+    .spark {
+        top: 11px;
+        right: 18px;
+    }
+}

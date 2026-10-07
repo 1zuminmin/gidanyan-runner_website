@@ -1,0 +1,154 @@
+/* ========================================
+   基本設定
+======================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+
+    background: #f5f5f5;
+    color: #222222;
+
+    text-align: center;
+
+    font-family:
+        "M PLUS Rounded 1c",
+        "Yu Gothic",
+        "Hiragino Sans",
+        "Meiryo",
+        sans-serif;
+}
+
+
+main {
+    width: 90%;
+    max-width: 500px;
+
+    margin: 30px auto;
+    padding-bottom: 30px;
+}
+
+
+/* ========================================
+   ぎだにゃん風共通ボタン
+======================================== */
+
+.button-area,
+.stage-button-area {
+    margin-bottom: 40px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.gida-btn {
+    position: relative;
+
+    font-family: inherit;
+
+    width: 100%;
+    max-width: 380px;
+    min-height: 90px;
+
+    margin: 0 auto;
+    padding: 18px 70px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #ffffff;
+    color: #ff9800;
+
+    border: 6px solid #000000;
+    border-radius: 999px;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.gida-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 0 #ff9800;
+    background: #fffaf2;
+}
+
+.gida-btn:focus-visible {
+    outline: 5px solid #ffd28a;
+    outline-offset: 5px;
+}
+
+.gida-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 #ff9800;
+}
+
+.gida-btn:disabled {
+    transform: none;
+    box-shadow: none;
+    cursor: wait;
+}
+
+.btn-text {
+    color: #ff9800;
+
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+
+    white-space: nowrap;
+}
+
+.paw {
+    position: absolute;
+    left: 25px;
+
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+
+.spark {
+    position: absolute;
+    top: 12px;
+    right: 25px;
+
+    color: #ff9800;
+
+    font-size: 1rem;
+    line-height: 1;
+}
+
+
+@media (max-width: 500px) {
+    main {
+        width: 92%;
+        margin-top: 20px;
+    }
+
+    .gida-btn {
+        min-height: 80px;
+        padding-right: 55px;
+        padding-left: 55px;
+    }
+
+    .btn-text {
+        font-size: clamp(1.1rem, 5.6vw, 1.35rem);
+    }
+}

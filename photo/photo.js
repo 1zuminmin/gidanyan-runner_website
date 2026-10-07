@@ -1,4 +1,4 @@
-import { loadPhotoAssets, renderPhoto, PHOTO_WIDTH, PHOTO_HEIGHT } from './photo-renderer.mjs?v=20261007-outside-blur';
+import { loadPhotoAssets, renderPhoto, PHOTO_WIDTH, PHOTO_HEIGHT } from './photo-renderer.mjs?v=20261007-structure1';
 
 const byId = id => document.getElementById(id);
 const video = byId('cameraVideo');

@@ -1,31 +1,16 @@
 // Browser integration tests: npm install --no-save --package-lock=false playwright
 // Uses synthetic canvas video only; never opens a physical camera.
 import assert from 'node:assert/strict';
-import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import test from 'node:test';
+import { startSiteServer } from './helpers/site-server.mjs';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
-const root = fileURLToPath(new URL('../', import.meta.url));
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png' };
 
 test('ぎだにゃんフォト: browser integration', async t => {
-    const server = createServer(async (req, res) => {
-        const name = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
-        const filename = path.resolve(root, `.${name === '/' ? '/index.html' : name}`);
-        try {
-            if (!filename.startsWith(root) || !types[path.extname(filename)]) throw new Error('not allowed');
-            const body = await readFile(filename);
-            res.writeHead(200, { 'Content-Type': types[path.extname(filename)] });
-            res.end(body);
-        } catch { res.writeHead(404); res.end(); }
-    });
-    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-    const base = `http://127.0.0.1:${server.address().port}`;
-    t.after(() => new Promise(resolve => server.close(resolve)));
+    const { base, close } = await startSiteServer();
+    t.after(close);
     const browser = await chromium.launch({ channel: process.env.PHOTO_TEST_BROWSER || 'chrome', headless: true });
     t.after(() => browser.close());
 
@@ -113,8 +98,8 @@ test('ぎだにゃんフォト: browser integration', async t => {
         const { page, errors } = await open();
         try {
             await page.goto(base);
-            const results = await page.evaluate(async () => {
-                const { loadPhotoAssets, renderPhoto, PHOTO_WIDTH: width, PHOTO_HEIGHT: height } = await import('/photo-renderer.mjs');
+            const results = await page.evaluate(async moduleURL => {
+                const { loadPhotoAssets, renderPhoto, PHOTO_WIDTH: width, PHOTO_HEIGHT: height } = await import(moduleURL);
                 const assets = await loadPhotoAssets();
                 const source = document.createElement('canvas');
                 source.width = source.videoWidth = 640;
@@ -192,7 +177,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 renderPhoto(ctx, source, assets, 'none', 'none', false);
                 geometry.offMatches = ctx.getImageData(0, 0, width, height).data.every((value, i) => value === baseline[i]);
                 return { checks, geometry };
-            });
+            }, `${base}/photo/photo-renderer.mjs`);
             for (const result of results.checks) {
                 assert.ok(result.transparentPixels > 1000);
                 assert.equal(result.movedPixels, 0, `${result.frame}, mirror=${result.mirror}: camera pixels match frame OFF exactly`);
@@ -212,8 +197,8 @@ test('ぎだにゃんフォト: browser integration', async t => {
         const { page, errors } = await open('detail');
         try {
             await page.goto(base);
-            const checks = await page.evaluate(async () => {
-                const { renderPhoto, PHOTO_WIDTH: width, PHOTO_HEIGHT: height } = await import('/photo-renderer.mjs');
+            const checks = await page.evaluate(async moduleURL => {
+                const { renderPhoto, PHOTO_WIDTH: width, PHOTO_HEIGHT: height } = await import(moduleURL);
                 const makeCanvas = () => Object.assign(document.createElement('canvas'), { width, height });
                 const source = makeCanvas();
                 source.videoWidth = width; source.videoHeight = height;
@@ -256,7 +241,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 sourceCtx.fillStyle = '#4078b0'; sourceCtx.fillRect(0, 0, width, height);
                 const updated = render('probe', false);
                 return { results, edges: [[0, 0], [1079, 0], [0, 1439], [1079, 1439]].map(([x, y]) => pixel(updated, x, y)) };
-            });
+            }, `${base}/photo/photo-renderer.mjs`);
             for (const result of checks.results) {
                 assert.equal(result.changedInside, 0, `mirror=${result.mirror}: the entire card interior stays pixel-identical`);
                 for (const { before, after } of result.outside) {
@@ -268,7 +253,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 assert.deepEqual(result.pose, [255, 0, 255, 255], 'the character is drawn sharply above the blurred camera');
             }
             for (const edge of checks.edges) assert.deepEqual(edge, [64, 120, 176, 255], 'new frames update and edges do not darken');
-            await page.goto(`${base}/photo.html`);
+            await page.goto(`${base}/photo/index.html`);
             await waitLive(page);
             if (process.env.PHOTO_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, 'photo-blur-live.png'), fullPage: true });
             assert.deepEqual(errors, []);
@@ -279,7 +264,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
         const { page, errors } = await open();
         try {
             await page.goto(base);
-            assert.match(await page.locator('a[href="photo.html"]').textContent(), /おまけ：ぎだにゃんと記念撮影！/);
+            assert.match(await page.locator('a[href="photo/index.html"]').textContent(), /おまけ：ぎだにゃんと記念撮影！/);
             if (process.env.PHOTO_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, 'photo-home.png'), fullPage: true });
             await page.getByRole('link', { name: /PHOTO/ }).click();
             await waitLive(page);
@@ -370,7 +355,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
         await t.test(`${mode}: helpful error and recovery`, async () => {
             const { page, errors } = await open(mode);
             try {
-                await page.goto(`${base}/photo.html`);
+                await page.goto(`${base}/photo/index.html`);
                 await page.waitForFunction(() => !document.querySelector('#retryCamera').hidden);
                 assert.match(await page.textContent('#photoStatus'), new RegExp(message));
                 assert.equal(await page.isDisabled('#captureButton'), true);
@@ -385,7 +370,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
     await t.test('late permission after pagehide is released; back/forward restore can restart', async () => {
         const { page, errors } = await open('delay');
         try {
-            await page.goto(`${base}/photo.html`);
+            await page.goto(`${base}/photo/index.html`);
             await page.waitForFunction(() => window.photoTest.resolve);
             await page.evaluate(() => { dispatchEvent(new PageTransitionEvent('pagehide')); window.photoTest.resolve(); });
             await page.waitForFunction(() => window.photoTest.streams[0]?.getTracks()[0].readyState === 'ended');
@@ -399,7 +384,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
     await t.test('backgrounding and disconnected camera release tracks and offer restart', async () => {
         const { page, errors } = await open();
         try {
-            await page.goto(`${base}/photo.html`);
+            await page.goto(`${base}/photo/index.html`);
             await waitLive(page);
             await page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, value: true }); document.dispatchEvent(new Event('visibilitychange')); });
             assert.equal(await stopped(page), true);
@@ -418,7 +403,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
         const { page, errors } = await open();
         try {
             await page.route('**/frame-x.png', route => route.abort());
-            await page.goto(`${base}/photo.html`);
+            await page.goto(`${base}/photo/index.html`);
             await page.waitForFunction(() => !document.querySelector('#retryCamera').hidden);
             assert.match(await page.textContent('#photoStatus'), /フレーム画像/);
             assert.equal(await page.evaluate(() => window.photoTest.requests.length), 0);
@@ -436,7 +421,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 const original = window.setTimeout;
                 window.setTimeout = (fn, delay, ...args) => original(fn, delay === 30000 ? 500 : delay, ...args);
             });
-            await page.goto(`${base}/photo.html`);
+            await page.goto(`${base}/photo/index.html`);
             await page.waitForFunction(() => window.photoTest.resolve);
             await page.waitForFunction(() => !document.querySelector('#retryCamera').hidden);
             assert.match(await page.textContent('#photoStatus'), /準備が完了しません/);
@@ -453,7 +438,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 navigator.canShare = () => true;
                 navigator.share = async ({ files }) => { window.photoTest.sharedType = files[0].type; throw new DOMException('Cancelled', 'AbortError'); };
             });
-            await page.goto(`${base}/photo.html`);
+            await page.goto(`${base}/photo/index.html`);
             await waitLive(page);
             await page.click('#captureButton');
             await page.waitForFunction(() => !document.querySelector('#resultActions').hidden);
@@ -470,7 +455,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
     await t.test('small and landscape screens fit live, captured and error states; help closes and restores focus', async () => {
         const { page, errors } = await open();
         try {
-            await page.goto(`${base}/photo.html`);
+            await page.goto(`${base}/photo/index.html`);
             await waitLive(page);
             for (const viewport of [{ width: 320, height: 480 }, { width: 320, height: 568 }, { width: 390, height: 664 }, { width: 390, height: 844 }, { width: 568, height: 320 }, { width: 844, height: 390 }]) {
                 await page.setViewportSize(viewport);
@@ -495,7 +480,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
 
         const denied = await open('deny');
         try {
-            await denied.page.goto(`${base}/photo.html`);
+            await denied.page.goto(`${base}/photo/index.html`);
             await denied.page.waitForFunction(() => !document.querySelector('#retryCamera').hidden);
             for (const viewport of [{ width: 320, height: 480 }, { width: 390, height: 664 }, { width: 568, height: 320 }]) {
                 await denied.page.setViewportSize(viewport);
