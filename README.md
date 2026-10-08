@@ -1,7 +1,7 @@
 # 走れ！ ぎだにゃん！ — website
 
 ## サイトURL
-https://1zuminmin.github.io/gidanyan-runner_website/index.html
+https://game.gidaisai.jp/index.html
 
 ## ファイル構成
 
