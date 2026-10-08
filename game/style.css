@@ -152,75 +152,97 @@
         font-size: 1.2rem;
     }
 
-    .manga-placeholder {
-        min-height: 330px;
-    }
-
-    .manga-placeholder-title {
-        font-size: 1.5rem;
-    }
-
-    .manga-image {
-
-        display: flex;
-
-        justify-content: center;
-
-        align-items: center;
-    }
 }
 
 /* =========================
    全ステージ共通の漫画・ゲーム画面
 ========================= */
 
+.stage-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.stage-header h1 {
+    color: #222222;
+    font-size: 1.5rem;
+}
+
 .manga-box {
-
+    /* The same panel occupies (142, 566)–(1394, 1482) in all 1536 × 2048 images. */
+    --panel-left: 142;
+    --panel-top: 566;
+    --panel-width: 1252;
+    --panel-height: 916;
+    position: relative;
+    box-sizing: content-box;
+    width: calc(100% - 10px);
+    aspect-ratio: var(--panel-width) / var(--panel-height);
+    overflow: hidden;
     background: #ffffff;
-
     border: 5px solid #000000;
-
-    border-radius: 25px;
-
-    padding: 20px;
-
-    margin-bottom: 30px;
+    border-radius: 16px;
 }
 
 .manga-image {
-
-    width: 100%;
-
-    height: 400px;
-
-    background: #eeeeee;
-
-    border-radius: 15px;
-
-    display: flex;
-
-    justify-content: center;
-
-    align-items: center;
-
-    color: #ff9800;
-
-    font-size: 2rem;
-
-    font-weight: 800;
-
-    margin-bottom: 15px;
+    position: absolute;
+    display: block;
+    width: calc(100% * 1536 / var(--panel-width));
+    height: auto;
+    left: calc(-100% * var(--panel-left) / var(--panel-width));
+    top: calc(-100% * var(--panel-top) / var(--panel-height));
 }
 
 .manga-page {
-
-    text-align: center;
-
-    color: #ff9800;
-
-    font-size: 1.2rem;
-
+    margin: 12px 0;
+    color: #333333;
+    font-size: 1rem;
     font-weight: 800;
+}
+
+.manga-navigation {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+}
+
+.manga-navigation .gida-btn {
+    min-width: 0;
+    max-width: none;
+    min-height: 60px;
+    padding: 12px 8px;
+    border-width: 4px;
+    border-radius: 16px;
+    touch-action: manipulation;
+}
+
+.manga-navigation .btn-text {
+    color: #222222;
+    font-size: clamp(0.9rem, 4.5vw, 1.25rem);
+    letter-spacing: 0.03em;
+    white-space: normal;
+}
+
+.manga-navigation #nextBtn:not(:disabled):not(.is-error) {
+    background: #ff9800;
+}
+
+.manga-navigation .gida-btn:disabled {
+    background: #eeeeee;
+    border-color: #999999;
+    cursor: not-allowed;
+}
+
+.manga-navigation .gida-btn:disabled .btn-text {
+    color: #666666;
+}
+
+.manga-navigation .gida-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 0 #ff9800;
 }
 
 .unity-container {
@@ -275,12 +297,6 @@
     border: none;
 
     background: #000000;
-}
-
-img.manga-image {
-    display: block;
-    width: 100%;
-    height: auto;
 }
 
 img.manga-image[hidden],
