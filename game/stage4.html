@@ -15,29 +15,36 @@
         href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800&display=swap"
     >
 
-    <link rel="stylesheet" href="../assets/css/common.css">
-    <link rel="stylesheet" href="style.css?v=20261007-structure1">
+    <link rel="stylesheet" href="../assets/css/common.css?v=20261008-navigation2">
+    <link rel="stylesheet" href="style.css?v=20261008-navigation2">
 </head>
 
 <body data-difficulty="ex" data-difficulty-label="EX">
 
     <main>
 
-        <div class="stage-title">
+        <header class="stage-header">
+            <a href="stage-select.html" class="back-link">
+                <span aria-hidden="true">←</span> 戻る
+            </a>
             <h1>EX</h1>
-        </div>
+        </header>
 
-        <div class="manga-box">
+        <section id="mangaReader" aria-label="ゲーム開始前の漫画">
+            <div class="manga-box">
 
-            <img
-            id="mangaImage"
-            class="manga-image"
-            src="images/stage1_manga-p1.png"
-            alt="EXの漫画・1ページ目"
-            fetchpriority="high"
-            decoding="async"
-            hidden
-            >
+                <img
+                id="mangaImage"
+                class="manga-image"
+                src="images/stage1_manga-p1.png"
+                alt="EXの漫画・1ページ目"
+                width="1536"
+                height="2048"
+                fetchpriority="high"
+                decoding="async"
+                hidden
+                >
+            </div>
 
             <p id="mangaStatus" class="unity-status" role="status" aria-live="polite">漫画を読み込んでいます…</p>
             <button id="mangaRetryBtn" class="gida-btn manga-retry" type="button" hidden>
@@ -48,11 +55,15 @@
                 1 / 4
             </div>
 
-        </div>
-
-        <button id="nextBtn" class="gida-btn" type="button" disabled>
-            <span class="btn-text">漫画読込中…</span>
-        </button>
+            <div class="manga-navigation" role="group" aria-label="漫画のページ操作">
+                <button id="prevBtn" class="gida-btn" type="button" disabled>
+                    <span class="btn-text">BACK</span>
+                </button>
+                <button id="nextBtn" class="gida-btn" type="button" disabled>
+                    <span class="btn-text">漫画読込中…</span>
+                </button>
+            </div>
+        </section>
 
         <p id="unityStatus" class="unity-status" role="status" aria-live="polite" hidden></p>
 
@@ -69,16 +80,9 @@
 
         </div>
 
-        <a href="stage-select.html" class="gida-btn back-btn">
-
-            <span class="back-arrow" aria-hidden="true">←</span>
-            <span class="btn-text">BACK</span>
-
-        </a>
-
     </main>
 
-    <script src="script.js?v=20261007-structure1"></script>
+    <script src="script.js?v=20261008-navigation1"></script>
 
 </body>
 

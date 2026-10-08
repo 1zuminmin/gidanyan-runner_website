@@ -33,11 +33,12 @@ const pageNumber =
 const nextBtn =
     document.getElementById("nextBtn");
 
+const prevBtn = document.getElementById("prevBtn");
+
 const btnText =
     nextBtn.querySelector(".btn-text");
 
-const mangaBox =
-    document.querySelector(".manga-box");
+const mangaReader = document.getElementById("mangaReader");
 
 const unityContainer =
     document.getElementById("unityContainer");
@@ -121,6 +122,7 @@ async function prepareManga() {
 function updateActionButton() {
     const isLastPage = currentPage === mangaPages.length - 1;
 
+    prevBtn.disabled = currentPage === 0;
     nextBtn.classList.remove("is-loading", "is-error");
     unityStatus.hidden = true;
     mangaRetryBtn.hidden = mangaState !== "error";
@@ -237,6 +239,12 @@ window.addEventListener("message", event => {
     }
 });
 
+prevBtn.addEventListener("click", () => {
+    if (prevBtn.disabled) return;
+    showMangaPage(currentPage - 1);
+    updateActionButton();
+});
+
 nextBtn.addEventListener("click", () => {
     if (nextBtn.disabled) return;
 
@@ -259,8 +267,7 @@ nextBtn.addEventListener("click", () => {
     }
 
     // 4枚目でPLAYを押した場合
-    mangaBox.style.display = "none";
-    nextBtn.style.display = "none";
+    mangaReader.hidden = true;
     unityStatus.hidden = true;
 
     // 読み込み済みのiframeをそのまま画面内へ移動する。

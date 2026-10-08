@@ -38,6 +38,32 @@ main {
 }
 
 
+/* 画面上部の共通「戻る」ボタン */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 16px;
+    border: 3px solid #000000;
+    border-radius: 14px;
+    color: #222222;
+    background: #ffffff;
+    font-size: 1rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    background: #fff0d6;
+}
+
+.back-link:focus-visible {
+    outline: 3px solid #9a5700;
+    outline-offset: 3px;
+}
+
 /* ========================================
    ぎだにゃん風共通ボタン
 ======================================== */

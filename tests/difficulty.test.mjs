@@ -237,6 +237,15 @@ test("failed later page keeps earlier images readable and resumes at the failed 
     assert.equal(e.get("#pageNumber").textContent, "3 / 4");
     assert.equal(e.get("#mangaImage"), e.decodeRequests[2].image);
     assert.equal(e.get("#unityFrame").src, undefined);
+    e.get("#prevBtn").click();
+    assert.equal(e.get("#pageNumber").textContent, "2 / 4");
+    assert.equal(e.get("#mangaImage"), e.decodeRequests[1].image);
+    e.get("#prevBtn").click();
+    e.get("#prevBtn").click();
+    assert.equal(e.get("#pageNumber").textContent, "1 / 4");
+    assert.equal(e.get("#prevBtn").disabled, true);
+    button.click(); button.click();
+    assert.equal(e.decodeRequests.length, 4, "going back and forward reuses the prepared pages");
     e.get("#mangaRetryBtn").click();
     assert.equal(e.decodeRequests.length, 5);
     assert.match(e.decodeRequests[4].image.src, /stage1_manga-p4\.png\?mangaRetry=1$/);

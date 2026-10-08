@@ -26,7 +26,7 @@
     padding: 6px 16px;
 }
 
-.home-link, .help-button {
+.help-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -41,7 +41,6 @@
 }
 
 .help-button { min-width: 78px; padding: 0 12px; border: 3px solid #111; border-radius: 14px; background: #fff; }
-.home-link { padding-right: 12px; }
 
 .photo-main {
     flex: 1;

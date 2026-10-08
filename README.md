@@ -218,9 +218,11 @@ Windowsでは大文字・小文字が違っていても動く場合があるが�
 | `game/stage1.html` | Easy | `Easy.unity` |
 | `game/stage2.html` | Normal | `Normal.unity` |
 | `game/stage3.html` | Hard | `Hard.unity` |
-| `game/stage4.html` | EX（おまけ） | `Special.unity` |
+| `game/stage4.html` | EX（スコアアタック！） | `Special.unity` |
 
 4ステージは既存の4ページの漫画と1つのUnityビルドを共用します。ページの`data-difficulty`を`game/script.js`が読み、iframeのURLへ`difficulty=easy`／`normal`／`hard`／`ex`を付けます。ステージページと漫画は `game/` 以下にまとめています。
+
+漫画は元画像の白い余白を表示範囲から除き、コマの大きさに枠を合わせます。4枚共通の表示範囲は1536×2048pxの画像内の左上(142, 566)、幅1252×高さ916pxで、元画像は変更していません。画像を差し替える際は `game/style.css` の `.manga-box` の表示範囲も確認してください。上部の「戻る」は難易度選択へ戻り、漫画の下に並ぶBACK／NEXTは漫画のページを移動します。1ページ目ではBACKを無効にし、最終ページではゲームの準備完了後にNEXTがPLAYへ変わります。
 
 2026年10月7日時点でUnityのNormal・Hard・SpecialはMainの複製で、ゲーム内容・設定も共通です。各ボタンはそれぞれの専用シーンへ接続しますが、難易度の調整はUnity側の今後の作業です。
 
