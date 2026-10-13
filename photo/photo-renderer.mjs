@@ -15,58 +15,18 @@ export const POSES = {
 export const POSE_AREA = { x: 0, y: 0, width: PHOTO_WIDTH, height: PHOTO_HEIGHT };
 // Inset the artwork 5% on each side; corners appear as 20px at a 360px preview.
 export const FRAME_CARD = { x: 54, y: 72, width: 972, height: 1296, radius: 60 };
-// Match the original artwork's inner orange/black border in its 1080 × 1440 PNG.
-// Its top-left and bottom-right curves differ from the social-media cards.
-export const ORIGINAL_FRAME_WINDOW = {
-    x: 78, y: 86, width: 912, height: 1250,
-    topLeftRadius: 350, bottomRightRadius: 350, feather: 72
+// A 9px outline appears as 3px at a 360px preview; it follows the PNG's alpha.
+export const ORIGINAL_FRAME_EDGE = {
+    width: 9, shadowColor: 'rgba(20, 35, 46, 0.22)', shadowBlur: 15, shadowOffsetY: 6
 };
 const frameLayers = new WeakMap();
+const originalFrameLayers = new WeakMap();
 // Blur a small copy instead of reading full-resolution pixels on every frame.
 // Three box passes give a soft blur without relying on Canvas filter support.
 const BLUR_WIDTH = 180;
 const BLUR_HEIGHT = 240;
 const BLUR_RADIUS = 3;
 const blurBuffers = new WeakMap();
-const originalPoseLayers = new WeakMap();
-let originalFadeMask;
-
-function getOriginalFadeMask() {
-    if (originalFadeMask) return originalFadeMask;
-    const { x, y, width, height, topLeftRadius, bottomRightRadius, feather } = ORIGINAL_FRAME_WINDOW;
-    originalFadeMask = document.createElement('canvas');
-    originalFadeMask.width = BLUR_WIDTH;
-    originalFadeMask.height = BLUR_HEIGHT;
-    const maskCtx = originalFadeMask.getContext('2d');
-    const pixels = maskCtx.createImageData(BLUR_WIDTH, BLUR_HEIGHT);
-    for (let row = 0; row < BLUR_HEIGHT; row++) for (let col = 0; col < BLUR_WIDTH; col++) {
-        const dx = (col + 0.5) * PHOTO_WIDTH / BLUR_WIDTH - (x + width / 2);
-        const dy = (row + 0.5) * PHOTO_HEIGHT / BLUR_HEIGHT - (y + height / 2);
-        const radius = dx < 0 && dy < 0 ? topLeftRadius : dx > 0 && dy > 0 ? bottomRightRadius : 0;
-        const qx = Math.abs(dx) - width / 2 + radius;
-        const qy = Math.abs(dy) - height / 2 + radius;
-        const distance = Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - radius;
-        const t = Math.max(0, Math.min(1, distance / feather + 0.5));
-        pixels.data[(row * BLUR_WIDTH + col) * 4 + 3] = Math.round(255 * t * t * (3 - 2 * t));
-    }
-    maskCtx.putImageData(pixels, 0, 0);
-    return originalFadeMask;
-}
-
-function originalPoseLayer(image) {
-    if (originalPoseLayers.has(image)) return originalPoseLayers.get(image);
-    const layer = document.createElement('canvas');
-    layer.width = PHOTO_WIDTH;
-    layer.height = PHOTO_HEIGHT;
-    const ctx = layer.getContext('2d');
-    const { x, y, width, height } = POSE_AREA;
-    ctx.drawImage(image, x, y, width, height);
-    // Only the character fades into the frame edge; the camera stays untouched.
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.drawImage(getOriginalFadeMask(), 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
-    originalPoseLayers.set(image, layer);
-    return layer;
-}
 
 function traceCard(ctx) {
     const { x, y, width, height, radius } = FRAME_CARD;
@@ -165,6 +125,40 @@ function frameLayer(image) {
     return layer;
 }
 
+function originalFrameLayer(image) {
+    if (originalFrameLayers.has(image)) return originalFrameLayers.get(image);
+    const outline = document.createElement('canvas');
+    outline.width = PHOTO_WIDTH;
+    outline.height = PHOTO_HEIGHT;
+    const outlineCtx = outline.getContext('2d');
+    outlineCtx.drawImage(image, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+    // Expand the artwork's silhouette, including edges facing the photo window.
+    // Build this once per image, without Canvas filter or a rectangular backing.
+    for (let step = 0; step < 32; step++) {
+        const angle = step * Math.PI * 2 / 32;
+        outlineCtx.drawImage(image,
+            Math.cos(angle) * ORIGINAL_FRAME_EDGE.width,
+            Math.sin(angle) * ORIGINAL_FRAME_EDGE.width, PHOTO_WIDTH, PHOTO_HEIGHT);
+    }
+    outlineCtx.globalCompositeOperation = 'source-in';
+    outlineCtx.fillStyle = '#fff';
+    outlineCtx.fillRect(0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+
+    const layer = document.createElement('canvas');
+    layer.width = PHOTO_WIDTH;
+    layer.height = PHOTO_HEIGHT;
+    const layerCtx = layer.getContext('2d');
+    layerCtx.save();
+    layerCtx.shadowColor = ORIGINAL_FRAME_EDGE.shadowColor;
+    layerCtx.shadowBlur = ORIGINAL_FRAME_EDGE.shadowBlur;
+    layerCtx.shadowOffsetY = ORIGINAL_FRAME_EDGE.shadowOffsetY;
+    layerCtx.drawImage(outline, 0, 0);
+    layerCtx.restore();
+    layerCtx.drawImage(image, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+    originalFrameLayers.set(image, layer);
+    return layer;
+}
+
 export function coverCrop(sourceWidth, sourceHeight, targetWidth, targetHeight) {
     const scale = Math.max(targetWidth / sourceWidth, targetHeight / sourceHeight);
     const width = targetWidth / scale;
@@ -196,14 +190,11 @@ export function renderPhoto(ctx, video, assets, frameKey, poseKey, mirror) {
     ctx.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
     ctx.restore();
     if (poseKey !== 'none') {
-        if (frameKey === 'original') ctx.drawImage(originalPoseLayer(assets[poseKey]), 0, 0);
-        else {
-            const { x, y, width, height } = POSE_AREA;
-            ctx.drawImage(assets[poseKey], x, y, width, height);
-        }
+        const { x, y, width, height } = POSE_AREA;
+        ctx.drawImage(assets[poseKey], x, y, width, height);
     }
     // Only the social-media cards blur the camera and character outside their window.
     if (frameKey !== 'none' && frameKey !== 'original') blurOutsideCard(ctx);
-    if (frameKey === 'original') ctx.drawImage(assets[frameKey], 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+    if (frameKey === 'original') ctx.drawImage(originalFrameLayer(assets[frameKey]), 0, 0);
     else if (frameKey !== 'none') ctx.drawImage(frameLayer(assets[frameKey]), 0, 0);
 }
