@@ -16,6 +16,8 @@ test('ぎだにゃんフォト: browser integration', async t => {
 
     async function open(mode = 'allow', viewport = { width: 390, height: 844 }) {
         const page = await browser.newPage({ viewport });
+        // Keep local integration checks independent of the external font CDN.
+        await page.route(/^https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
         await page.addInitScript(({ mode }) => {
@@ -131,7 +133,8 @@ test('ぎだにゃんフォト: browser integration', async t => {
                         renderPhoto(ctx, source, { ...assets, borderless: artwork }, frame, 'none', mirror);
                         const actual = ctx.getImageData(0, 0, width, height).data;
                         overlayCtx.clearRect(0, 0, width, height);
-                        overlayCtx.drawImage(artwork, width * 0.05, height * 0.05, width * 0.9, height * 0.9);
+                        if (frame === 'original') overlayCtx.drawImage(artwork, 0, 0, width, height);
+                        else overlayCtx.drawImage(artwork, width * 0.05, height * 0.05, width * 0.9, height * 0.9);
                         const layer = overlayCtx.getImageData(0, 0, width, height).data;
                         let transparentPixels = 0, movedPixels = 0, blendedPixels = 0, blendErrors = 0;
                         const blendSamples = [];
@@ -139,8 +142,13 @@ test('ぎだにゃんフォト: browser integration', async t => {
                             // Inside the card, even translucent artwork must leave the camera
                             // unchanged. The outer band is tested separately for corners/shadow.
                             if (x < 116 || x >= 964 || y < 134 || y >= 1306) continue;
+                            // Sample the original's clear window away from its artwork and shadow.
+                            if (frame === 'original' && (x < 450 || x >= 630 || y < 400 || y >= 1000)) continue;
                             const i = (y * width + x) * 4;
                             if (layer[i + 3] === 0) {
+                                // Ignore bitmap edge filtering differences between the cached
+                                // frame layer and this independently rendered reference.
+                                if (![i - 4, i + 4, i - width * 4, i + width * 4].every(neighbor => layer[neighbor + 3] === 0)) continue;
                                 transparentPixels++;
                                 if ([0, 1, 2, 3].some(c => actual[i + c] !== baseline[i + c])) movedPixels++;
                             } else if (layer[i + 3] < 255) {
@@ -193,7 +201,105 @@ test('ぎだにゃんフォト: browser integration', async t => {
         } finally { await page.close(); }
     });
 
-    await t.test('only the rounded card exterior is blurred; OFF, live updates and sharp poses are preserved', async () => {
+    await t.test('original artwork has only a subtle shadow without a white outline or pose fading', async () => {
+        const { page, errors } = await open();
+        try {
+            await page.goto(base);
+            const result = await page.evaluate(async moduleURL => {
+                const { loadPhotoAssets, renderPhoto, PHOTO_WIDTH: width, PHOTO_HEIGHT: height } = await import(moduleURL);
+                const assets = await loadPhotoAssets();
+                const makeCanvas = () => Object.assign(document.createElement('canvas'), { width, height });
+                const source = makeCanvas();
+                source.videoWidth = width; source.videoHeight = height;
+                const sourceCtx = source.getContext('2d');
+                sourceCtx.fillStyle = '#282828'; sourceCtx.fillRect(0, 0, width, height);
+                sourceCtx.fillStyle = '#dcdcdc';
+                for (let y = 12; y < height; y += 24) sourceCtx.fillRect(0, y, width, 12);
+                const output = makeCanvas();
+                const ctx = output.getContext('2d', { willReadFrequently: true });
+                const transparent = makeCanvas();
+                const poseCanvas = makeCanvas();
+                const poseCtx = poseCanvas.getContext('2d');
+                poseCtx.fillStyle = '#ff00ff'; poseCtx.fillRect(0, 0, width, height);
+                const probe = { original: transparent, insta: transparent, pose1: poseCanvas };
+                const pixel = (x, y) => Array.from(ctx.getImageData(x, y, 1, 1).data);
+                const checks = [];
+                for (const pose of ['none', 'pose1']) {
+                    renderPhoto(ctx, source, probe, 'original', pose, false);
+                    checks.push({ ramp: [30, 54, 78, 102, 126].map(x => pixel(x, 720)[0]),
+                        center: pixel(540, 720), curvedCorner: pixel(150, 150) });
+                }
+                renderPhoto(ctx, source, probe, 'insta', 'none', false);
+                const socialInside = pixel(78, 720);
+                renderPhoto(ctx, source, probe, 'none', 'pose1', false);
+                const off = pixel(30, 720);
+                // Switching frames must not mask the pose or modify its source.
+                renderPhoto(ctx, source, probe, 'original', 'pose1', false);
+                const switchedBack = pixel(30, 720);
+                // A hollow decoration checks both sides of the silhouette, rather
+                // than accepting a shadow or white rectangle around the canvas.
+                const decoration = makeCanvas();
+                const decorationCtx = decoration.getContext('2d');
+                decorationCtx.fillStyle = '#ff9800';
+                decorationCtx.fillRect(300, 400, 200, 200);
+                decorationCtx.clearRect(340, 440, 120, 120);
+                renderPhoto(ctx, source, { original: decoration, pose1: poseCanvas }, 'original', 'none', false);
+                const edges = {
+                    outer: pixel(294, 480), inner: pixel(345, 480),
+                    shadow: pixel(506, 480), clearWindow: pixel(400, 480),
+                    artwork: pixel(310, 480), farOutside: pixel(50, 480)
+                };
+                renderPhoto(ctx, source, { original: decoration, pose1: poseCanvas }, 'original', 'pose1', false);
+                edges.overPose = pixel(294, 480);
+                edges.poseInWindow = pixel(400, 480);
+                edges.artworkOverPose = pixel(310, 480);
+                renderPhoto(ctx, source, { original: decoration }, 'none', 'none', false);
+                edges.off = [pixel(294, 480), pixel(345, 480), pixel(506, 480)];
+                // Opaque pixels near the photo edge must remain at the PNG's native coordinates.
+                renderPhoto(ctx, source, assets, 'original', 'none', false);
+                const actual = ctx.getImageData(0, 0, width, height).data;
+                const reference = makeCanvas().getContext('2d');
+                reference.drawImage(assets.original, 0, 0, width, height);
+                const artwork = reference.getImageData(0, 0, width, height).data;
+                let edgePixels = 0, edgeErrors = 0;
+                for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+                    if (x >= 54 && x < width - 54 && y >= 72 && y < height - 72) continue;
+                    const i = (y * width + x) * 4;
+                    if (artwork[i + 3] !== 255) continue;
+                    edgePixels++;
+                    if ([0, 1, 2, 3].some(c => actual[i + c] !== artwork[i + c])) edgeErrors++;
+                }
+                return { checks, socialInside, off, switchedBack, edges, edgePixels, edgeErrors };
+            }, `${base}/photo/photo-renderer.mjs`);
+            const [camera, pose] = result.checks;
+            assert.deepEqual(camera.ramp, [40, 40, 40, 40, 40], 'camera detail stays sharp across the entire border');
+            assert.deepEqual(camera.center, [40, 40, 40, 255]);
+            assert.deepEqual(camera.curvedCorner, [40, 40, 40, 255]);
+            assert.deepEqual(pose.ramp, [255, 255, 255, 255, 255], 'the character no longer fades at the old frame boundary');
+            assert.deepEqual(pose.center, [255, 0, 255, 255]);
+            assert.deepEqual(pose.curvedCorner, [255, 0, 255, 255], 'the old curved mask is removed');
+            assert.deepEqual(result.socialInside, [40, 40, 40, 255], 'social frame still uses its own sharp border');
+            assert.deepEqual(result.off, [255, 0, 255, 255], 'OFF restores the full character');
+            assert.deepEqual(result.switchedBack, [255, 0, 255, 255], 'switching back keeps the full character');
+            for (const pixel of [result.edges.outer, result.edges.inner, result.edges.shadow]) {
+                assert.ok(pixel[0] < 40 && pixel[0] > 25, 'a subtle shadow follows both sides of the artwork');
+                assert.ok(pixel[1] <= 40 && pixel[2] <= 43, 'the artwork edge has no added white outline');
+                assert.equal(pixel[3], 255);
+            }
+            assert.deepEqual(result.edges.clearWindow, [40, 40, 40, 255], 'transparent areas remain open to the camera');
+            assert.deepEqual(result.edges.farOutside, [40, 40, 40, 255], 'no rectangular backing is added');
+            assert.deepEqual(result.edges.artwork, [255, 152, 0, 255], 'the original artwork stays on top of the shadow');
+            assert.ok(result.edges.overPose[0] < 255 && result.edges.overPose[2] < 255 && result.edges.overPose[1] < 10, 'the shadow darkens the pose without a white backing');
+            assert.deepEqual(result.edges.artworkOverPose, result.edges.artwork, 'the frame stays above the pose');
+            assert.deepEqual(result.edges.poseInWindow, [255, 0, 255, 255], 'the pose remains visible through the window');
+            for (const pixel of result.edges.off) assert.deepEqual(pixel, [40, 40, 40, 255], 'OFF removes artwork and shadow');
+            assert.ok(result.edgePixels > 100, 'original artwork reaches outside the former card inset');
+            assert.equal(result.edgeErrors, 0, 'original artwork is neither inset nor clipped');
+            assert.deepEqual(errors, []);
+        } finally { await page.close(); }
+    });
+
+    await t.test('camera and poses blur only outside the rounded card; OFF and live updates are preserved', async () => {
         const { page, errors } = await open('detail');
         try {
             await page.goto(base);
@@ -211,6 +317,8 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 const pose = makeCanvas();
                 const poseCtx = pose.getContext('2d');
                 poseCtx.fillStyle = '#ff00ff'; poseCtx.fillRect(0, 0, width, height);
+                poseCtx.fillStyle = '#000000';
+                for (let x = 12; x < width; x += 24) poseCtx.fillRect(x, 0, 12, height);
                 // Transparent artwork isolates the blur mask from any frame artwork/shadow.
                 const assets = { probe: makeCanvas(), pose1: pose };
                 const render = (frame, mirror, pose = 'none') => {
@@ -227,6 +335,8 @@ test('ぎだにゃんフォト: browser integration', async t => {
                         const i = (y * width + x) * 4;
                         if ([0, 1, 2, 3].some(c => blurred[i + c] !== baseline[i + c])) changedInside++;
                     }
+                    const sharpPose = render('none', mirror, 'pose1');
+                    const blurredPose = render('probe', mirror, 'pose1');
                     results.push({
                         mirror, changedInside,
                         // Includes a point inside the rectangular bounds but outside its rounded corner.
@@ -234,7 +344,11 @@ test('ぎだにゃんフォト: browser integration', async t => {
                             before: pixel(baseline, x, y), after: pixel(blurred, x, y)
                         })),
                         offMatches: render('none', mirror).every((value, i) => value === baseline[i]),
-                        pose: pixel(render('probe', mirror, 'pose1'), 800, 1000)
+                        pose: pixel(blurredPose, 800, 1000),
+                        poseOutside: [[20, 720], [1060, 720], [540, 20], [540, 1420], [60, 78]].map(([x, y]) => ({
+                            before: pixel(sharpPose, x, y), after: pixel(blurredPose, x, y)
+                        })),
+                        poseOffMatches: render('none', mirror, 'pose1').every((value, i) => value === sharpPose[i])
                     });
                 }
                 // A new source frame must replace the cached work image, including all four edges.
@@ -250,7 +364,15 @@ test('ぎだにゃんフォト: browser integration', async t => {
                     assert.equal(after[3], 255);
                 }
                 assert.equal(result.offMatches, true, 'OFF immediately restores the sharp camera at the same crop');
-                assert.deepEqual(result.pose, [255, 0, 255, 255], 'the character is drawn sharply above the blurred camera');
+                assert.deepEqual(result.pose, [255, 0, 255, 255], 'the character stays sharp inside the card');
+                for (const { before, after } of result.poseOutside) {
+                    assert.ok(Math.abs(before[0] - after[0]) > 30, 'character details outside the card are softened');
+                    assert.ok(after[0] > 90 && after[0] < 170, 'character blur reduces contrast');
+                    assert.equal(after[1], 0);
+                    assert.equal(after[2], after[0]);
+                    assert.equal(after[3], 255);
+                }
+                assert.equal(result.poseOffMatches, true, 'frame OFF restores the sharp character everywhere');
             }
             for (const edge of checks.edges) assert.deepEqual(edge, [64, 120, 176, 255], 'new frames update and edges do not darken');
             await page.goto(`${base}/photo/index.html`);
@@ -275,8 +397,9 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 for (const pose of ['pose1', 'pose2', 'none']) {
                     await selectChoice(page, 'frame', frame);
                     await selectChoice(page, 'pose', pose);
-                    if (process.env.PHOTO_SCREENSHOT_DIR && ['insta', 'x'].includes(frame) && pose === 'none') {
-                        await page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, `photo-frame-${frame}.png`), fullPage: true });
+                    if (process.env.PHOTO_SCREENSHOT_DIR && (frame === 'original' || (['insta', 'x'].includes(frame) && pose === 'none'))) {
+                        const suffix = pose === 'none' ? '' : `-${pose}`;
+                        await page.screenshot({ path: path.join(process.env.PHOTO_SCREENSHOT_DIR, `photo-frame-${frame}${suffix}.png`), fullPage: true });
                     }
                     await page.click('#captureButton');
                     await page.waitForFunction(() => !document.querySelector('#resultActions').hidden);
@@ -292,14 +415,19 @@ test('ぎだにゃんフォト: browser integration', async t => {
                         const actual = ctx.getImageData(0, 0, result.width, result.height).data;
                         const expected = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
                         const right = Array.from(ctx.getImageData(880, 500, 1, 1).data);
-                        const posePixels = ctx.getImageData(690, 855, 300, 360).data;
+                        const left = Array.from(ctx.getImageData(200, 500, 1, 1).data);
+                        // Full-artboard poses can occupy either side of the photograph.
+                        const posePixels = actual;
                         let poseDifferences = 0;
                         for (let i = 0; i < posePixels.length; i += 4) {
-                            if ([0, 1, 2].some(c => Math.abs(posePixels[i + c] - right[c]) > 8)) poseDifferences++;
+                            const x = (i / 4) % result.width;
+                            if (Math.abs(x - result.width / 2) < 4) continue;
+                            const cameraPixel = x < result.width / 2 ? left : right;
+                            if ([0, 1, 2].some(c => Math.abs(posePixels[i + c] - cameraPixel[c]) > 8)) poseDifferences++;
                         }
                         return { width: image.width, height: image.height, type: blob.type,
                             equal: actual.every((v, i) => v === expected[i]),
-                            left: Array.from(ctx.getImageData(200, 500, 1, 1).data),
+                            left,
                             right, poseDifferences,
                             corners: [[0, 0], [1079, 0], [0, 1439], [1079, 1439]].map(([x, y]) => Array.from(ctx.getImageData(x, y, 1, 1).data)) };
                     });
@@ -312,7 +440,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
                     if (frame === 'none') {
                         result.corners.forEach((pixel, i) => {
                             assert.equal(pixel[3], 255);
-                            assert.ok(i % 2 === 0 ? pixel[2] > pixel[0] : pixel[0] > pixel[2], 'frame OFF fills every corner with camera pixels');
+                            if (pose === 'none') assert.ok(i % 2 === 0 ? pixel[2] > pixel[0] : pixel[0] > pixel[2], 'frame and pose OFF fill every corner with camera pixels');
                         });
                         assert.equal(result.poseDifferences > 0, pose !== 'none', 'pose selection stays independent of frame OFF');
                     }
@@ -419,10 +547,14 @@ test('ぎだにゃんフォト: browser integration', async t => {
         try {
             await page.addInitScript(() => {
                 const original = window.setTimeout;
-                window.setTimeout = (fn, delay, ...args) => original(fn, delay === 30000 ? 500 : delay, ...args);
+                window.setTimeout = (fn, delay, ...args) => {
+                    if (delay === 30000) window.photoTestTimeout = fn;
+                    return original(fn, delay, ...args);
+                };
             });
             await page.goto(`${base}/photo/index.html`);
             await page.waitForFunction(() => window.photoTest.resolve);
+            await page.evaluate(() => window.photoTestTimeout());
             await page.waitForFunction(() => !document.querySelector('#retryCamera').hidden);
             assert.match(await page.textContent('#photoStatus'), /準備が完了しません/);
             await page.evaluate(() => window.photoTest.resolve());

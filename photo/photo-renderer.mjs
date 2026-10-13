@@ -4,17 +4,23 @@ export const PHOTO_HEIGHT = 1440;
 export const FRAMES = {
     insta: { src: 'images/frame-insta.png' },
     x: { src: 'images/frame-x.png' },
-    original: { src: 'images/frame-original.svg' },
+    original: { src: 'images/frame-original.png' },
     none: { src: null }
 };
 export const POSES = {
-    pose1: 'images/pose-1.svg',
-    pose2: 'images/pose-2.svg'
+    pose1: 'images/pose-1.png',
+    pose2: 'images/pose-2.png'
 };
-export const POSE_AREA = { x: 690, y: 855, width: 300, height: 360 };
+// Pose PNGs include their placement on the full photo artboard.
+export const POSE_AREA = { x: 0, y: 0, width: PHOTO_WIDTH, height: PHOTO_HEIGHT };
 // Inset the artwork 5% on each side; corners appear as 20px at a 360px preview.
 export const FRAME_CARD = { x: 54, y: 72, width: 972, height: 1296, radius: 60 };
+// The shadow separates the frame from the pose without adding an outline or backing.
+export const ORIGINAL_FRAME_SHADOW = {
+    shadowColor: 'rgba(20, 35, 46, 0.45)', shadowBlur: 24, shadowOffsetY: 6
+};
 const frameLayers = new WeakMap();
+const originalFrameLayers = new WeakMap();
 // Blur a small copy instead of reading full-resolution pixels on every frame.
 // Three box passes give a soft blur without relying on Canvas filter support.
 const BLUR_WIDTH = 180;
@@ -119,6 +125,22 @@ function frameLayer(image) {
     return layer;
 }
 
+function originalFrameLayer(image) {
+    if (originalFrameLayers.has(image)) return originalFrameLayers.get(image);
+    const layer = document.createElement('canvas');
+    layer.width = PHOTO_WIDTH;
+    layer.height = PHOTO_HEIGHT;
+    const layerCtx = layer.getContext('2d');
+    layerCtx.save();
+    layerCtx.shadowColor = ORIGINAL_FRAME_SHADOW.shadowColor;
+    layerCtx.shadowBlur = ORIGINAL_FRAME_SHADOW.shadowBlur;
+    layerCtx.shadowOffsetY = ORIGINAL_FRAME_SHADOW.shadowOffsetY;
+    layerCtx.drawImage(image, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+    layerCtx.restore();
+    originalFrameLayers.set(image, layer);
+    return layer;
+}
+
 export function coverCrop(sourceWidth, sourceHeight, targetWidth, targetHeight) {
     const scale = Math.max(targetWidth / sourceWidth, targetHeight / sourceHeight);
     const width = targetWidth / scale;
@@ -149,10 +171,12 @@ export function renderPhoto(ctx, video, assets, frameKey, poseKey, mirror) {
     ctx.scale(mirror ? -1 : 1, 1);
     ctx.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
     ctx.restore();
-    if (frameKey !== 'none') blurOutsideCard(ctx);
     if (poseKey !== 'none') {
         const { x, y, width, height } = POSE_AREA;
         ctx.drawImage(assets[poseKey], x, y, width, height);
     }
-    if (frameKey !== 'none') ctx.drawImage(frameLayer(assets[frameKey]), 0, 0);
+    // Only the social-media cards blur the camera and character outside their window.
+    if (frameKey !== 'none' && frameKey !== 'original') blurOutsideCard(ctx);
+    if (frameKey === 'original') ctx.drawImage(originalFrameLayer(assets[frameKey]), 0, 0);
+    else if (frameKey !== 'none') ctx.drawImage(frameLayer(assets[frameKey]), 0, 0);
 }
