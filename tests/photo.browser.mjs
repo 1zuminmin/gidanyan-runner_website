@@ -142,7 +142,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
                             // Inside the card, even translucent artwork must leave the camera
                             // unchanged. The outer band is tested separately for corners/shadow.
                             if (x < 116 || x >= 964 || y < 134 || y >= 1306) continue;
-                            // Sample the original's clear window away from its outlined artwork.
+                            // Sample the original's clear window away from its artwork and shadow.
                             if (frame === 'original' && (x < 450 || x >= 630 || y < 400 || y >= 1000)) continue;
                             const i = (y * width + x) * 4;
                             if (layer[i + 3] === 0) {
@@ -201,7 +201,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
         } finally { await page.close(); }
     });
 
-    await t.test('original artwork has a white contour and subtle shadow without fading the pose', async () => {
+    await t.test('original artwork has only a subtle shadow without a white outline or pose fading', async () => {
         const { page, errors } = await open();
         try {
             await page.goto(base);
@@ -246,7 +246,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 renderPhoto(ctx, source, { original: decoration, pose1: poseCanvas }, 'original', 'none', false);
                 const edges = {
                     outer: pixel(294, 480), inner: pixel(345, 480),
-                    shadow: pixel(515, 480), clearWindow: pixel(400, 480),
+                    shadow: pixel(506, 480), clearWindow: pixel(400, 480),
                     artwork: pixel(310, 480), farOutside: pixel(50, 480)
                 };
                 renderPhoto(ctx, source, { original: decoration, pose1: poseCanvas }, 'original', 'pose1', false);
@@ -254,7 +254,7 @@ test('ぎだにゃんフォト: browser integration', async t => {
                 edges.poseInWindow = pixel(400, 480);
                 edges.artworkOverPose = pixel(310, 480);
                 renderPhoto(ctx, source, { original: decoration }, 'none', 'none', false);
-                edges.off = [pixel(294, 480), pixel(345, 480), pixel(515, 480)];
+                edges.off = [pixel(294, 480), pixel(345, 480), pixel(506, 480)];
                 // Opaque pixels near the photo edge must remain at the PNG's native coordinates.
                 renderPhoto(ctx, source, assets, 'original', 'none', false);
                 const actual = ctx.getImageData(0, 0, width, height).data;
@@ -281,16 +281,18 @@ test('ぎだにゃんフォト: browser integration', async t => {
             assert.deepEqual(result.socialInside, [40, 40, 40, 255], 'social frame still uses its own sharp border');
             assert.deepEqual(result.off, [255, 0, 255, 255], 'OFF restores the full character');
             assert.deepEqual(result.switchedBack, [255, 0, 255, 255], 'switching back keeps the full character');
-            assert.deepEqual(result.edges.outer, [255, 255, 255, 255], 'white follows the outer artwork edge');
-            assert.deepEqual(result.edges.inner, [255, 255, 255, 255], 'white also follows the edge inside a transparent window');
-            assert.ok(result.edges.shadow[0] < 40 && result.edges.shadow[0] > 25, 'a thin shadow extends beyond the white contour');
+            for (const pixel of [result.edges.outer, result.edges.inner, result.edges.shadow]) {
+                assert.ok(pixel[0] < 40 && pixel[0] > 25, 'a subtle shadow follows both sides of the artwork');
+                assert.ok(pixel[1] <= 40 && pixel[2] <= 43, 'the artwork edge has no added white outline');
+                assert.equal(pixel[3], 255);
+            }
             assert.deepEqual(result.edges.clearWindow, [40, 40, 40, 255], 'transparent areas remain open to the camera');
             assert.deepEqual(result.edges.farOutside, [40, 40, 40, 255], 'no rectangular backing is added');
-            assert.deepEqual(result.edges.artwork, [255, 152, 0, 255], 'the original artwork stays on top of the outline');
-            assert.deepEqual(result.edges.overPose, result.edges.outer, 'the contour separates the frame from the pose below');
+            assert.deepEqual(result.edges.artwork, [255, 152, 0, 255], 'the original artwork stays on top of the shadow');
+            assert.ok(result.edges.overPose[0] < 255 && result.edges.overPose[2] < 255 && result.edges.overPose[1] < 10, 'the shadow darkens the pose without a white backing');
             assert.deepEqual(result.edges.artworkOverPose, result.edges.artwork, 'the frame stays above the pose');
             assert.deepEqual(result.edges.poseInWindow, [255, 0, 255, 255], 'the pose remains visible through the window');
-            for (const pixel of result.edges.off) assert.deepEqual(pixel, [40, 40, 40, 255], 'OFF removes artwork, outline and shadow');
+            for (const pixel of result.edges.off) assert.deepEqual(pixel, [40, 40, 40, 255], 'OFF removes artwork and shadow');
             assert.ok(result.edgePixels > 100, 'original artwork reaches outside the former card inset');
             assert.equal(result.edgeErrors, 0, 'original artwork is neither inset nor clipped');
             assert.deepEqual(errors, []);

@@ -15,9 +15,9 @@ export const POSES = {
 export const POSE_AREA = { x: 0, y: 0, width: PHOTO_WIDTH, height: PHOTO_HEIGHT };
 // Inset the artwork 5% on each side; corners appear as 20px at a 360px preview.
 export const FRAME_CARD = { x: 54, y: 72, width: 972, height: 1296, radius: 60 };
-// A 9px outline appears as 3px at a 360px preview; it follows the PNG's alpha.
-export const ORIGINAL_FRAME_EDGE = {
-    width: 9, shadowColor: 'rgba(20, 35, 46, 0.22)', shadowBlur: 15, shadowOffsetY: 6
+// The shadow separates the frame from the pose without adding an outline or backing.
+export const ORIGINAL_FRAME_SHADOW = {
+    shadowColor: 'rgba(20, 35, 46, 0.45)', shadowBlur: 24, shadowOffsetY: 6
 };
 const frameLayers = new WeakMap();
 const originalFrameLayers = new WeakMap();
@@ -127,34 +127,16 @@ function frameLayer(image) {
 
 function originalFrameLayer(image) {
     if (originalFrameLayers.has(image)) return originalFrameLayers.get(image);
-    const outline = document.createElement('canvas');
-    outline.width = PHOTO_WIDTH;
-    outline.height = PHOTO_HEIGHT;
-    const outlineCtx = outline.getContext('2d');
-    outlineCtx.drawImage(image, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
-    // Expand the artwork's silhouette, including edges facing the photo window.
-    // Build this once per image, without Canvas filter or a rectangular backing.
-    for (let step = 0; step < 32; step++) {
-        const angle = step * Math.PI * 2 / 32;
-        outlineCtx.drawImage(image,
-            Math.cos(angle) * ORIGINAL_FRAME_EDGE.width,
-            Math.sin(angle) * ORIGINAL_FRAME_EDGE.width, PHOTO_WIDTH, PHOTO_HEIGHT);
-    }
-    outlineCtx.globalCompositeOperation = 'source-in';
-    outlineCtx.fillStyle = '#fff';
-    outlineCtx.fillRect(0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
-
     const layer = document.createElement('canvas');
     layer.width = PHOTO_WIDTH;
     layer.height = PHOTO_HEIGHT;
     const layerCtx = layer.getContext('2d');
     layerCtx.save();
-    layerCtx.shadowColor = ORIGINAL_FRAME_EDGE.shadowColor;
-    layerCtx.shadowBlur = ORIGINAL_FRAME_EDGE.shadowBlur;
-    layerCtx.shadowOffsetY = ORIGINAL_FRAME_EDGE.shadowOffsetY;
-    layerCtx.drawImage(outline, 0, 0);
-    layerCtx.restore();
+    layerCtx.shadowColor = ORIGINAL_FRAME_SHADOW.shadowColor;
+    layerCtx.shadowBlur = ORIGINAL_FRAME_SHADOW.shadowBlur;
+    layerCtx.shadowOffsetY = ORIGINAL_FRAME_SHADOW.shadowOffsetY;
     layerCtx.drawImage(image, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+    layerCtx.restore();
     originalFrameLayers.set(image, layer);
     return layer;
 }
