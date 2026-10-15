@@ -14,6 +14,12 @@ https://game.gidaisai.jp/index.html
 
 以前の `stage1.html` などのステージURLと `photo.html` は、GitHub Pagesの `404.html` から新しい場所へ案内します。ローカルで旧URLを確認する場合も、404時にこのHTMLを返すサーバーが必要です。
 
+## 難易度選択の画像
+
+`game/stage-select.html` の画像枠は、スマートフォン・PCともに横2：縦1です。Unityから1600×800pxで撮影すると、追加のトリミングや位置合わせなしで表示できます。
+
+Easyには `game/images/easy-selection.png` を使用しています。元画像はUnityプロジェクトの `ArtSource/Website/Easy/easy-selection-20261015-202048.png` です。Normal・Hard・EXの画像を追加するときも、同じ比率で `game/images/` に保存し、該当カードの `stage-image` 内に画像を指定します。
+
 # Unity WebGL 新ビルド適用手順
 
 ## 1. UnityでWebGLビルドを作成する

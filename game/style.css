@@ -108,7 +108,7 @@
 
 .stage-image {
     width: 100%;
-    height: 200px;
+    aspect-ratio: 2 / 1;
 
     background: #eeeeee;
     color: #888888;
@@ -119,6 +119,13 @@
 
     font-size: 1.5rem;
     font-weight: 800;
+}
+
+.stage-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .stage-name {
@@ -148,7 +155,6 @@
     }
 
     .stage-image {
-        height: 170px;
         font-size: 1.2rem;
     }
 
