@@ -18,7 +18,9 @@ https://game.gidaisai.jp/index.html
 
 `game/stage-select.html` の画像枠は、スマートフォン・PCともに横2：縦1です。Unityから1600×800pxで撮影すると、追加のトリミングや位置合わせなしで表示できます。
 
-Easyには `game/images/easy-selection.png` を使用しています。元画像はUnityプロジェクトの `ArtSource/Website/Easy/easy-selection-20261015-202048.png` です。Normal・Hard・EXの画像を追加するときも、同じ比率で `game/images/` に保存し、該当カードの `stage-image` 内に画像を指定します。
+各難易度には `game/images/` の `easy-selection.png`、`normal-selection.png`、`hard-selection.png`、`ex-selection.png` を使用しています。4枚とも1600×800pxです。画像を差し替えるときも同じ比率で保存し、該当カードの `stage-image` 内に画像を指定します。Easyの元画像はUnityプロジェクトの `ArtSource/Website/Easy/easy-selection-20261015-202048.png` です。
+
+Easy・Normal・Hardは画像の左上に「唐揚げを作ろう！｜岐阜駅コース」「クッキーを作ろう！｜岐阜駅コース」「グッズセットを作ろう！｜岐阜城コース」を小さく1行で表示します。文字は `stage-caption`、コース名は `stage-course` で指定し、白文字に薄い影だけを付けています。画像にグラデーションは重ねません。
 
 # Unity WebGL 新ビルド適用手順
 
