@@ -14,14 +14,6 @@ https://game.gidaisai.jp/index.html
 
 以前の `stage1.html` などのステージURLと `photo.html` は、GitHub Pagesの `404.html` から新しい場所へ案内します。ローカルで旧URLを確認する場合も、404時にこのHTMLを返すサーバーが必要です。
 
-## 難易度選択の画像
-
-`game/stage-select.html` の画像枠は、スマートフォン・PCともに横2：縦1です。Unityから1600×800pxで撮影すると、追加のトリミングや位置合わせなしで表示できます。
-
-各難易度には `game/images/` の `easy-selection.png`、`normal-selection.png`、`hard-selection.png`、`ex-selection.png` を使用しています。4枚とも1600×800pxです。画像を差し替えるときも同じ比率で保存し、該当カードの `stage-image` 内に画像を指定します。Easyの元画像はUnityプロジェクトの `ArtSource/Website/Easy/easy-selection-20261015-202048.png` です。
-
-Easy・Normal・Hardは画像の左上に「唐揚げを作ろう！｜岐阜駅コース」「クッキーを作ろう！｜岐阜駅コース」「グッズセットを作ろう！｜岐阜城コース」、EXは「キャンディを集めよう！」を小さく1行で表示します。文字は `stage-caption`、コース名は `stage-course` で指定し、白文字に薄い影だけを付けています。画像にグラデーションは重ねません。
-
 # Unity WebGL 新ビルド適用手順
 
 ## 1. UnityでWebGLビルドを作成する
@@ -226,7 +218,7 @@ Windowsでは大文字・小文字が違っていても動く場合があるが�
 | `game/stage1.html` | Easy | `Easy.unity` |
 | `game/stage2.html` | Normal | `Normal.unity` |
 | `game/stage3.html` | Hard | `Hard.unity` |
-| `game/stage4.html` | EX（スコアアタック！） | `Special.unity` |
+| `game/stage4.html` | EX（スコアアタック！） | `Omake.unity` |
 
 4ステージは既存の4ページの漫画と1つのUnityビルドを共用します。ページの`data-difficulty`を`game/script.js`が読み、iframeのURLへ`difficulty=easy`／`normal`／`hard`／`ex`を付けます。ステージページと漫画は `game/` 以下にまとめています。
 
@@ -244,7 +236,7 @@ Unity側ではWebBootstrap → 対象シーンの順に読み込みます。`gam
 
 ### 接続に対応したビルドの作成
 
-Unity側の `Tools > Gidanyan Runner > Build Web (All Stages)` を使い、WebBootstrap・Easy・Normal・Hard・Specialを含むビルドを作成します。従来のMainのみのビルドは準備完了通知に対応していないため使用できません。
+Unity側の `Tools > Gidanyan Runner > Build Web (All Stages)` を使い、WebBootstrap・Easy・Normal・Hard・Omakeを含むビルドを作成します。従来のMainのみのビルドは準備完了通知に対応していないため使用できません。
 
 `Builds/WebDifficulty/Build`内の4ファイルを上記の名前へそろえて`game/Build`へコピーし、`StreamingAssets`も`game/StreamingAssets`へ反映します。初回および接続処理の更新時は、ビルド出力の`launch.js`も`game/launch.js`へコピーします。元ファイルはUnity側の`Assets/WebGLTemplates/GidanyanMobile/launch.js`です。Web独自の`game/index.html`は維持してください。
 
