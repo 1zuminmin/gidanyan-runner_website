@@ -84,9 +84,10 @@ header {
 }
 
 .supporter-banner {
-    display: flex;
-    align-items: center;
-    width: 100%;
+    display: block;
+    width: 180px;
+    max-width: 100%;
+    min-width: 0;
     min-height: 44px;
     border-radius: 8px;
 }
@@ -94,6 +95,7 @@ header {
 .supporter-banner img {
     display: block;
     width: 100%;
+    max-width: 100%;
     height: auto;
     border-radius: inherit;
 }
