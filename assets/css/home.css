@@ -83,6 +83,30 @@ header {
     color: #666666;
 }
 
+.supporter-banner {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 44px;
+    border-radius: 8px;
+}
+
+.supporter-banner img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: inherit;
+}
+
+.supporter-banner:focus-visible {
+    outline: 3px solid #9a5700;
+    outline-offset: 4px;
+}
+
+.supporter-banner:active {
+    opacity: 0.8;
+}
+
 
 /* ========================================
    フッター
