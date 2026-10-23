@@ -16,7 +16,7 @@
     >
 
     <link rel="stylesheet" href="../assets/css/common.css?v=20261008-navigation2">
-    <link rel="stylesheet" href="style.css?v=20261008-navigation2">
+    <link rel="stylesheet" href="style.css?v=20261023-story-pages">
 </head>
 
 <body data-difficulty="easy" data-difficulty-label="Easy">
@@ -80,10 +80,29 @@
 
         </div>
 
+
+        <section id="clearStory" class="clear-story" aria-label="クリア後ストーリー" hidden>
+            <p class="clear-message" role="status">クリアおめでとう！ 続きのお話を読んでみよう。</p>
+            <button id="openClearStory" class="gida-btn" type="button" aria-expanded="false" aria-controls="clearStoryReader"><span class="btn-text">クリア後ストーリーを読む</span></button>
+            <section id="clearStoryReader" hidden>
+                <h2 id="clearStoryTitle" tabindex="-1">クリア後ストーリー</h2>
+                <p id="clearStoryStatus" role="status"></p>
+                <div id="clearStoryPages"></div>
+                <div id="clearStoryNavigation" hidden>
+                    <p id="clearStoryPageNumber" class="manga-page" aria-live="polite"></p>
+                    <div class="manga-navigation" role="group" aria-label="クリア後の漫画のページ操作">
+                        <button id="clearStoryPrev" class="gida-btn" type="button" disabled><span class="btn-text">BACK</span></button>
+                        <button id="clearStoryNext" class="gida-btn" type="button" disabled><span class="btn-text">NEXT</span></button>
+                    </div>
+                </div>
+                <button id="closeClearStory" class="back-link" type="button">リザルト画面に戻る</button>
+            </section>
+        </section>
     </main>
 
     <script src="script.js?v=20261008-navigation1"></script>
 
+<script src="after-story.js?v=20261023-story-pages"></script>
 </body>
 
 </html>
