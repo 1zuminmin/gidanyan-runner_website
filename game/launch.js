@@ -8,10 +8,18 @@ function startGidanyanGame(config, loaderUrl) {
     const fill = document.querySelector("#fill");
     const status = document.querySelector("#status");
     let finished = false;
+    let stageIsReady = false;
     let timeout;
 
     const notifyParent = (type, message = "") => {
         window.parent.postMessage({ source: "gidanyan-unity", type, loadId, difficulty, message }, window.location.origin);
+    };
+    window.gidanyanRunState = (reportedDifficulty, state) => {
+        if (!stageIsReady || reportedDifficulty !== difficulty) return;
+        if (!["started", "cleared", "failed"].includes(state)) return;
+        window.parent.postMessage({ source: "gidanyan-unity", loadId, difficulty,
+            type: state === "started" ? "run-started" : "result",
+            cleared: state === "cleared" }, window.location.origin);
     };
     const fail = error => {
         if (finished) return;
@@ -58,6 +66,7 @@ function startGidanyanGame(config, loaderUrl) {
         loading.classList.add("hidden");
         loading.setAttribute("aria-hidden", "true");
         document.querySelector("#fullscreen").onclick = () => instance.SetFullscreen(1);
+        stageIsReady = true;
         notifyParent("ready");
     }).catch(fail);
 
