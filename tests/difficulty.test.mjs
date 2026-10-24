@@ -217,7 +217,7 @@ test("first image failure has a retry and never starts Unity", async () => {
     e.get("#mangaRetryBtn").click();
     e.get("#mangaRetryBtn").click();
     assert.equal(e.decodeRequests.length, 2);
-    assert.match(e.decodeRequests[1].image.src, /stage1_manga-p1\.png\?mangaRetry=1$/);
+    assert.match(e.decodeRequests[1].image.src, /stories\/before\/easy\/01\.png\?mangaRetry=1$/);
     e.decodeRequests[1].resolve();
     await tick();
     assert.equal(e.get("#mangaImage"), e.decodeRequests[1].image);
@@ -248,7 +248,7 @@ test("failed later page keeps earlier images readable and resumes at the failed 
     assert.equal(e.decodeRequests.length, 4, "going back and forward reuses the prepared pages");
     e.get("#mangaRetryBtn").click();
     assert.equal(e.decodeRequests.length, 5);
-    assert.match(e.decodeRequests[4].image.src, /stage1_manga-p4\.png\?mangaRetry=1$/);
+    assert.match(e.decodeRequests[4].image.src, /stories\/before\/easy\/04\.png\?mangaRetry=1$/);
     assert.equal(e.get("#pageNumber").textContent, "3 / 4");
     e.decodeRequests[4].resolve();
     await tick();

@@ -53,17 +53,17 @@ test('game navigation and moved URLs work under the GitHub Pages project path', 
                     const exit = document.querySelector('.back-link').getBoundingClientRect();
                     return {
                         imageRatio: image.width / image.height,
-                        frameWidth: box.width - image.width * 1252 / 1536,
-                        frameHeight: box.height - image.height * 916 / 2048,
-                        panelLeft: image.left + image.width * 142 / 1536 - box.left,
-                        panelTop: image.top + image.height * 566 / 2048 - box.top,
+                        frameWidth: box.width - image.width,
+                        frameHeight: box.height - image.height,
+                        panelLeft: image.left - box.left,
+                        panelTop: image.top - box.top,
                         controlsBelowImage: back.top >= box.bottom && next.top >= box.bottom,
                         buttonsSideBySide: Math.abs(back.top - next.top) < 1 && back.right < next.left,
                         tapSize: Math.min(back.height, next.height), exitAboveImage: exit.bottom <= box.top,
                         overflow: document.documentElement.scrollWidth > innerWidth
                     };
                 });
-                assert.ok(Math.abs(layout.imageRatio - 0.75) < 0.001);
+                assert.ok(Math.abs(layout.imageRatio - 9 / 16) < 0.001);
                 assert.ok(Math.abs(layout.frameWidth - 10) < 1 && Math.abs(layout.frameHeight - 10) < 1, 'frame hugs the comic panel');
                 assert.ok(Math.abs(layout.panelLeft - 5) < 1 && Math.abs(layout.panelTop - 5) < 1, 'the whole panel fits inside the border');
                 assert.equal(layout.controlsBelowImage && layout.buttonsSideBySide && layout.exitAboveImage, true);
