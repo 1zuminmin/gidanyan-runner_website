@@ -59,7 +59,9 @@
         if (message.type === "run-started" || message.type === "ready" || message.type === "error") reset();
         if (message.type !== "result") return;
         reset();
-        if (message.cleared !== true || !container.classList.contains("is-visible")) return;
+        // Extra is endless: its result is normally a failed run, not a goal clear.
+        if (typeof message.cleared !== "boolean") return;
+        if ((!message.cleared && course !== "ex") || !container.classList.contains("is-visible")) return;
         unlocked = true;
         panel.hidden = false;
     });

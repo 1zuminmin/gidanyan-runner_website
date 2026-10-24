@@ -15,7 +15,7 @@ function setup(course='easy', list=[]) {
 }
 for(const course of ['easy','normal','hard','ex'])test(`${course}: successful result unlocks matching story; retry hides it`,async()=>{
  const {get,send}=setup(course,['01.png','02.webp']);
- send({cleared:false});assert.equal(get('clearStory').hidden,true);
+ send({cleared:false});assert.equal(get('clearStory').hidden,course !== 'ex');
  send();assert.equal(get('clearStory').hidden,false);
  await get('openClearStory').click();
  assert.deepEqual(Array.from(get('clearStoryPages').children,x=>x.src),[`stories/${course}/01.png`,`stories/${course}/02.webp`]);
@@ -45,4 +45,12 @@ test('page navigation shows exactly one page, bounds buttons, and resets when re
 });
 test('single page disables both navigation buttons; empty story hides controls',async()=>{
  for(const list of [[],['01.png']]){const {get,send}=setup('easy',list);send();await get('openClearStory').click();assert.equal(get('clearStoryPrev').disabled,true);assert.equal(get('clearStoryNext').disabled,true);assert.equal(get('clearStoryNavigation').hidden,list.length===0)}
+});
+
+test('Extra unlocks on failed result, rejects malformed results, and hides on restart', async () => {
+ const {get,send}=setup('ex',['01.png']);
+ for(const cleared of [undefined,null,0,'false']){send({cleared});assert.equal(get('clearStory').hidden,true)}
+ send({cleared:false});assert.equal(get('clearStory').hidden,false);
+ await get('openClearStory').click();assert.equal(get('clearStoryPages').children[0].src,'stories/ex/01.png');
+ send({type:'run-started'});assert.equal(get('clearStory').hidden,true);
 });
