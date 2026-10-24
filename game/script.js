@@ -1,9 +1,30 @@
-const mangaPages = [
+const fallbackMangaPages = [
     "images/stage1_manga-p1.png",
     "images/stage1_manga-p2.png",
     "images/stage1_manga-p3.png",
     "images/stage1_manga-p4.png"
 ];
+const courseMangaPages = {
+    "easy": [
+        "stories/before/easy/01.png",
+        "stories/before/easy/02.png",
+        "stories/before/easy/03.png",
+        "stories/before/easy/04.png"
+    ],
+    "normal": [
+        "stories/before/normal/01.jpg",
+        "stories/before/normal/02.jpg",
+        "stories/before/normal/03.jpg",
+        "stories/before/normal/04.jpg"
+    ],
+    "hard": [
+        "stories/before/hard/01.png",
+        "stories/before/hard/02.png",
+        "stories/before/hard/03.png",
+        "stories/before/hard/04.png"
+    ]
+};
+const mangaPages = courseMangaPages[document.body.dataset.difficulty] || fallbackMangaPages;
 
 let currentPage = 0;
 const mangaImages = [];
@@ -102,7 +123,7 @@ async function prepareManga() {
     updateActionButton();
 
     try {
-        // Display page 1 first, then prepare pages 2–4 in reading order.
+        // Display page 1 first, then prepare the remaining pages in reading order.
         // Retain decoded image elements so turning a page never starts another download.
         while (mangaImages.length < mangaPages.length) {
             const index = mangaImages.length;
@@ -198,7 +219,7 @@ function startUnityLoad(isRetry = false) {
         url.searchParams.set("retry", String(Date.now()));
     }
 
-    // 漫画4枚の取得・デコード後に、画面外のiframeでUnityを準備する。
+    // 漫画全ページの取得・デコード後に、画面外のiframeでUnityを準備する。
     unityFrame.src = url.href;
 
     unityLoadTimeout = window.setTimeout(() => {
@@ -266,7 +287,7 @@ nextBtn.addEventListener("click", () => {
         return;
     }
 
-    // 4枚目でPLAYを押した場合
+    // 最後のページでPLAYを押した場合
     mangaReader.hidden = true;
     unityStatus.hidden = true;
 

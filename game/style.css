@@ -375,3 +375,7 @@ img.manga-image[hidden],
 #clearStoryPrev:not(:disabled) { background: white; }
 #clearStoryNext:not(:disabled) { background: #ff9800; }
 #clearStoryNavigation .gida-btn:disabled { background: #eee; border-color: #999; cursor: not-allowed; }
+
+/* New opening artwork uses the entire portrait page. */
+.manga-box.full-page-manga { aspect-ratio: 9 / 16; }
+.full-page-manga .manga-image { position: static; width: 100%; height: auto; left: auto; top: auto; }
