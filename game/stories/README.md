@@ -14,6 +14,6 @@ PNG・JPG・JPEG・WebP に対応。ファイル名は半角英数字・ハイ�
 ## Unityとの連携
 新しいWebGLビルドが必要です。今回のUnityソース変更を含めてビルドし、game/Build のビルド一式を更新してください。
 Unityから window.gidanyanRunState("easy", "cleared") のように通知され、launch.js が親ページに安全な送信元・コース・読み込みID付きで渡します。
-started: リトライ等でボタンを隠す / cleared: ゴール成功 / failed: 失敗（表示しない）。
+started: リトライ等でボタンを隠す / cleared: ゴール成功 / failed: 失敗（Easy・Normal・Hardでは表示しない。エンドレス形式のExtraは終了後に表示する）。
 旧ビルドは通知を送らないので、ウェブサイトだけ更新してもボタンは出ません。
 全画面表示中はPLAY画面の外側が見えないため、全画面を解除して下にスクロールしてください。
