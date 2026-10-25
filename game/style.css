@@ -379,3 +379,16 @@ img.manga-image[hidden],
 /* New opening artwork uses the entire portrait page. */
 .manga-box.full-page-manga { aspect-ratio: 9 / 16; }
 .full-page-manga .manga-image { position: static; width: 100%; height: auto; left: auto; top: auto; }
+
+/* Native swipe readers: keep vertical page scrolling and pinch zoom available. */
+.manga-swipe { display: flex; width: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: #ff9800 #fff0d6; cursor: grab; border-radius: 16px; }
+.manga-swipe.is-dragging { scroll-snap-type: none; cursor: grabbing; user-select: none; }
+.manga-swipe:focus-visible { outline: 3px solid #d67700; outline-offset: 3px; }
+.manga-slide { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+.manga-swipe img { -webkit-user-drag: none; user-select: none; }
+#clearStoryPages { align-items: flex-start; }
+#clearStoryPages .manga-slide img { margin-bottom: 0; }
+.swipe-hint { margin: 12px 0; font-size: .9rem; color: #74532b; }
+.manga-play { background: #ff9800; min-height: 60px; padding: 12px 24px; border-width: 4px; }
+.manga-play .btn-text { color: #222; }
+.manga-play[hidden] { display: none; }

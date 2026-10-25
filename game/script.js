@@ -54,7 +54,7 @@ const pageNumber =
 const nextBtn =
     document.getElementById("nextBtn");
 
-const prevBtn = document.getElementById("prevBtn");
+const mangaTrack = document.getElementById("mangaTrack");
 
 const btnText =
     nextBtn.querySelector(".btn-text");
@@ -76,7 +76,7 @@ const unityOrigin =
 async function loadMangaImage(index) {
     const image = index === 0 && useInitialImage ? mangaImage : new Image();
     useInitialImage = false;
-    image.id = "mangaImage";
+    image.id = `mangaImage-${index}`;
     image.className = "manga-image";
     image.alt = `${difficultyLabel}の漫画・${index + 1}ページ目`;
     image.fetchPriority = index === 0 ? "high" : "auto";
@@ -110,8 +110,7 @@ function showMangaPage(index) {
     const image = mangaImages[index];
     if (!image) return;
     image.hidden = false;
-    if (image !== mangaImage) mangaImage.replaceWith(image);
-    mangaImage = image;
+
     currentPage = index;
     pageNumber.textContent = `${index + 1} / ${mangaPages.length}`;
     pageNumber.hidden = false;
@@ -129,6 +128,19 @@ async function prepareManga() {
             const index = mangaImages.length;
             const image = await loadMangaImage(index);
             mangaImages.push(image);
+            image.hidden = false;
+            if (index === 0) {
+                if (image !== mangaImage) mangaImage.replaceWith(image);
+                mangaImage = image;
+            } else {
+                const slide = document.createElement("div");
+                slide.className = "manga-slide";
+                const box = document.createElement("div");
+                box.className = difficulty === "ex" ? "manga-box" : "manga-box full-page-manga";
+                box.appendChild(image);
+                slide.appendChild(box);
+                mangaTrack.appendChild(slide);
+            }
             if (index === 0) showMangaPage(0);
             updateActionButton();
         }
@@ -143,7 +155,7 @@ async function prepareManga() {
 function updateActionButton() {
     const isLastPage = currentPage === mangaPages.length - 1;
 
-    prevBtn.disabled = currentPage === 0;
+    nextBtn.hidden = !isLastPage;
     nextBtn.classList.remove("is-loading", "is-error");
     unityStatus.hidden = true;
     mangaRetryBtn.hidden = mangaState !== "error";
@@ -157,7 +169,7 @@ function updateActionButton() {
 
     if (!mangaImages[0] || (!isLastPage && !mangaImages[currentPage + 1])) {
         nextBtn.disabled = true;
-        btnText.textContent = mangaState === "error" ? "NEXT" : "漫画読込中…";
+        btnText.textContent = "漫画読込中…";
         if (mangaState !== "error") {
             nextBtn.classList.add("is-loading");
             mangaStatus.hidden = false;
@@ -167,8 +179,8 @@ function updateActionButton() {
     }
 
     if (!isLastPage) {
-        nextBtn.disabled = false;
-        btnText.textContent = "NEXT";
+        nextBtn.disabled = true;
+        btnText.textContent = "PLAY";
         return;
     }
 
@@ -260,23 +272,15 @@ window.addEventListener("message", event => {
     }
 });
 
-prevBtn.addEventListener("click", () => {
-    if (prevBtn.disabled) return;
-    showMangaPage(currentPage - 1);
+window.createMangaSwipe(mangaTrack, index => {
+    showMangaPage(index);
     updateActionButton();
 });
 
 nextBtn.addEventListener("click", () => {
     if (nextBtn.disabled) return;
 
-    // まだ次の漫画がある場合
-    if (currentPage < mangaPages.length - 1) {
-
-        showMangaPage(currentPage + 1);
-        updateActionButton();
-
-        return;
-    }
+    if (currentPage !== mangaPages.length - 1) return;
 
     if (unityState === "error") {
         startUnityLoad(true);
