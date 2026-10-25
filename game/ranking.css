@@ -22,3 +22,6 @@
 .hall-score strong{font-size:clamp(26px,7.3vw,44px);}
 .story-notice .ranking-notice-link{margin-top:8px;background:#fff;}
 .story-notice .ranking-notice-link:hover{background:#fff0d6;}
+
+#recordRegistration{scroll-margin-top:20px;}
+.story-notice .ranking-notice-link:disabled{opacity:.55;cursor:wait;}

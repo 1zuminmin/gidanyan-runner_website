@@ -15,6 +15,8 @@ export function renderLeaderboard(root,data) {
 }
 export async function mountRanking(root) {
  const resultOnly=root.dataset?.rankingMode==='result';
+ const registrationButton=resultOnly?document.getElementById('openRecordRegistration'):null;
+ if(registrationButton)registrationButton.disabled=true;
  if(resultOnly)root.hidden=true;
  const status=root.querySelector('[data-ranking-status]');const local=root.querySelector('[data-local-best]');const form=root.querySelector('form');const button=form?.querySelector('button');const name=form?.querySelector('input');const result=root.querySelector('[data-run-score]');
  const key='gidanyan-ex-ranking-v1';let saved={};let persistent=true;
@@ -42,7 +44,7 @@ export async function mountRanking(root) {
  window.addEventListener('message',async event=>{
   if(!trustedMessage(event,frame,location.href))return;const d=event.data;
   if(['ready','error','run-started'].includes(d.type)){
-   serial++;ticket=null;pending=null;submitted=false;if(form)form.hidden=true;if(resultOnly)root.hidden=true;
+   serial++;ticket=null;pending=null;submitted=false;if(form)form.hidden=true;if(resultOnly)root.hidden=true;if(registrationButton)registrationButton.disabled=true;
    if(d.type==='run-started'){const n=serial;ticket=api('/api/runs',{}).then(t=>n===serial?t:null).catch(()=>null);}
    return;
   }
@@ -50,6 +52,7 @@ export async function mountRanking(root) {
   const n=serial;pending=d.result;const runTicket=await ticket;if(n!==serial)return;
   pending={...d.result,runId:runTicket?.runId};saved.best=Math.max(Number.isSafeInteger(saved.best)?saved.best:0,pending.score);persist();localBest();
   if(resultOnly)root.hidden=false;
+  if(registrationButton)registrationButton.disabled=false;
   result.textContent=`今回のスコア：${pending.score.toLocaleString()} pt`;form.hidden=false;button.disabled=!runTicket;
   status.textContent=runTicket?'ニックネームを入力して、ランキングに記録を残そう！':'ランキングに接続できませんでした。自己ベストはこのブラウザに保存しました。';
  });

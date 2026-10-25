@@ -13,6 +13,14 @@
     document.getElementById("openStoryNotice").addEventListener("click", () => open.click());
     document.getElementById("dismissStoryNotice").addEventListener("click", () => { notice.hidden = true; });
 
+    document.getElementById("openRecordRegistration")?.addEventListener("click", () => {
+        const registration = document.getElementById("recordRegistration");
+        if (!registration || registration.hidden) return;
+        notice.hidden = true;
+        registration.focus({ preventScroll: true });
+        registration.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
     const storyTiming = document.body.dataset.difficulty === "ex" ? "プレイ後" : "クリア後";
 
     let images = [];

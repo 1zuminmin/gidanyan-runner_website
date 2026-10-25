@@ -17,7 +17,7 @@
 
     <link rel="stylesheet" href="../assets/css/common.css?v=20261008-navigation2">
     <link rel="stylesheet" href="style.css?v=20261025-story-notice">
-<link rel="stylesheet" href="ranking.css?v=20261025-rounded1">
+<link rel="stylesheet" href="ranking.css?v=20261025-register1">
 </head>
 
 <body data-difficulty="ex" data-difficulty-label="EX">
@@ -79,7 +79,7 @@
         </div>
 
 
-        <section class="ranking-card" data-ranking data-ranking-mode="result" aria-label="EXのプレイ結果" hidden>
+        <section id="recordRegistration" tabindex="-1" class="ranking-card" data-ranking data-ranking-mode="result" aria-label="EXのプレイ結果" hidden>
 <h2>今回のチャレンジ</h2>
 <p class="ranking-best" data-run-score></p>
 <p data-local-best></p>
@@ -108,14 +108,14 @@
         <button id="dismissStoryNotice" class="story-notice-close" type="button" aria-label="漫画のお知らせを閉じる">×</button>
         <p role="status">プレイしてくれてありがとう！</p>
         <button id="openStoryNotice" class="gida-btn" type="button" aria-controls="clearStoryReader"><span class="btn-text">プレイ後の漫画を読む →</span></button>
-        <a class="gida-btn ranking-notice-link" href="ranking.html"><span class="btn-text">ランキングを見る →</span></a>
+        <button id="openRecordRegistration" class="gida-btn ranking-notice-link" type="button" aria-controls="recordRegistration" disabled><span class="btn-text">記録を登録する →</span></button>
     </aside>
 
     <script src="manga-swipe.js?v=20261025-swipe1"></script>
     <script src="script.js?v=20261025-1656"></script>
 
-<script src="after-story.js?v=20261025-ex-story"></script>
-<script type="module" src="ranking-client.js?v=20261025-result2"></script>
+<script src="after-story.js?v=20261025-register1"></script>
+<script type="module" src="ranking-client.js?v=20261025-register1"></script>
 </body>
 
 </html>

@@ -63,3 +63,13 @@ for (const course of ['easy','normal','hard','ex']) test(`${course}: returning f
  assert.equal(get('stageBackLink').focused,true);
  assert.equal(get('unityContainer').scrolled,undefined);
 });
+
+test('EX registration notice scrolls to the same-page form without leaving the result',()=>{
+ const {get,send}=setup('ex');send({cleared:false});
+ get('recordRegistration').hidden=false;
+ get('openRecordRegistration').click();
+ assert.equal(get('storyNotice').hidden,true);
+ assert.equal(get('recordRegistration').scrolled,true);
+ assert.equal(get('recordRegistration').focused,true);
+ assert.equal(get('clearStory').hidden,false);
+});
