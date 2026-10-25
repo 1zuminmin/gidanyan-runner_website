@@ -13,6 +13,8 @@
     document.getElementById("openStoryNotice").addEventListener("click", () => open.click());
     document.getElementById("dismissStoryNotice").addEventListener("click", () => { notice.hidden = true; });
 
+    const storyTiming = document.body.dataset.difficulty === "ex" ? "プレイ後" : "クリア後";
+
     let images = [];
     let currentPage = 0;
     const clearPages = () => {
@@ -26,7 +28,7 @@
     const updatePageStatus = () => {
         const image = images[currentPage];
         status.textContent = !image ? "" : image.storyState === "error"
-            ? "このページを読み込めませんでした。上の「クリア後ストーリーを読む」で再試行できます。"
+            ? `このページを読み込めませんでした。上の「${storyTiming}ストーリーを読む」で再試行できます。`
             : image.storyState === "ready" ? "" : "ページを読み込んでいます…";
     };
     const showPage = index => {
@@ -74,7 +76,7 @@
         const token = ++request;
         reader.hidden = false;
         open.setAttribute("aria-expanded", "true");
-        document.getElementById("clearStoryTitle").textContent = `${document.body.dataset.difficultyLabel} クリア後ストーリー`;
+        document.getElementById("clearStoryTitle").textContent = `${document.body.dataset.difficultyLabel} ${storyTiming}ストーリー`;
         document.getElementById("clearStoryTitle").focus({ preventScroll: true });
         reader.scrollIntoView({ behavior: "smooth", block: "start" });
         status.textContent = "お話を読み込んでいます…";
@@ -93,7 +95,7 @@
 
             list.forEach((name, index) => {
                 const image = document.createElement("img");
-                image.alt = `${document.body.dataset.difficultyLabel} クリア後ストーリー ${index + 1}ページ目`;
+                image.alt = `${document.body.dataset.difficultyLabel} ${storyTiming}ストーリー ${index + 1}ページ目`;
                 image.loading = index === 0 ? "eager" : "lazy";
                 image.decoding = "async";
                 image.hidden = false;
