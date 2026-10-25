@@ -135,17 +135,18 @@ test("download failures and timeouts report error, never late ready", async () =
 });
 
 
-for (const course of Object.keys(stageLabels)) test(`${course}: swipe to last page then PLAY; swipe back hides PLAY`, async () => {
+for (const course of Object.keys(stageLabels)) for (let startPage=0; startPage<4; startPage++) test(`${course}: PLAY is visible from page 1 and starts from page ${startPage+1}`, async () => {
  const e=environment(course);runInNewContext(pageScript,e.context);await tick();
  const track=e.get('#mangaTrack'),button=e.get('#nextBtn'),frame=e.get('#unityFrame');
- assert.equal(track.children.length,4);assert.equal(button.hidden,true);
- track.scrollTo({left:320});assert.equal(e.get('#pageNumber').textContent,'2 / 4');
- track.scrollTo({left:960});assert.equal(button.hidden,false);assert.equal(button.disabled,true);
+ assert.equal(track.children.length,4);assert.equal(button.hidden,false);assert.equal(button.disabled,true);
+ assert.equal(button.querySelector('.btn-text').textContent,'PLAY');
+ button.click();assert.equal(e.get('#unityContainer').classList.contains('is-visible'),false);
  const valid={source:frame.contentWindow,origin:'http://localhost',data:{source:'gidanyan-unity',difficulty:course,type:'ready',loadId:'1'}};
  e.window.message({...valid,origin:'https://evil.example'});assert.equal(button.disabled,true);
  e.window.message(valid);assert.equal(button.disabled,false);
- track.scrollTo({left:640});assert.equal(button.hidden,true);assert.equal(button.disabled,true);
- track.scrollTo({left:960});button.click();assert.equal(e.get('#unityContainer').classList.contains('is-visible'),true);
+ track.scrollTo({left:startPage*320});
+ assert.equal(button.hidden,false);assert.equal(button.disabled,false);
+ button.click();assert.equal(e.get('#unityContainer').classList.contains('is-visible'),true);
 });
 test('slow or failed manga remains readable, retry resumes, Unity waits for all pages',async()=>{
  const e=environment('easy',{manualImages:true});runInNewContext(pageScript,e.context);
