@@ -392,3 +392,19 @@ img.manga-image[hidden],
 .manga-play { background: #ff9800; min-height: 60px; padding: 12px 24px; border-width: 4px; }
 .manga-play .btn-text { color: #222; }
 .manga-play[hidden] { display: none; }
+
+/* Keep the ending-comic invitation visible above mobile browser controls. */
+.story-notice[hidden] { display: none; }
+.story-notice {
+    position: fixed; z-index: 100; bottom: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: 50%; transform: translateX(-50%); box-sizing: border-box;
+    width: min(440px, calc(100% - 24px)); padding: 12px 16px 14px;
+    background: #fff5df; color: #222; border: 3px solid #222;
+    border-radius: 22px; box-shadow: 0 6px 0 #2222, 0 0 24px #0003;
+}
+.story-notice p { margin: 0 28px 8px; text-align: center; font-size: 15px; }
+.story-notice .gida-btn { width: 100%; min-height: 52px; padding: 10px; background: #ff9800; border: 3px solid #222; border-radius: 28px; touch-action: manipulation; }
+.story-notice .btn-text { color: #222; font-size: clamp(15px, 4vw, 19px); white-space: normal; }
+.story-notice-close { position: absolute; right: 3px; top: 0; width: 36px; height: 36px; border: 0; background: transparent; color: #222; font-size: 26px; cursor: pointer; }
+#clearStoryReader { scroll-margin-top: 16px; }

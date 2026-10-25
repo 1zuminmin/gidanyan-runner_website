@@ -9,6 +9,10 @@
     const navigation = document.getElementById("clearStoryNavigation");
     const pageNumber = document.getElementById("clearStoryPageNumber");
 
+    const notice = document.getElementById("storyNotice");
+    document.getElementById("openStoryNotice").addEventListener("click", () => open.click());
+    document.getElementById("dismissStoryNotice").addEventListener("click", () => { notice.hidden = true; });
+
     let images = [];
     let currentPage = 0;
     const clearPages = () => {
@@ -41,6 +45,7 @@
     let unlocked = false;
     const reset = () => {
         unlocked = false;
+        notice.hidden = true;
         request++;
         panel.hidden = true;
         reader.hidden = true;
@@ -61,14 +66,17 @@
         if ((!message.cleared && course !== "ex") || !container.classList.contains("is-visible")) return;
         unlocked = true;
         panel.hidden = false;
+        notice.hidden = false;
     });
     open.addEventListener("click", async () => {
         if (!unlocked) return;
+        notice.hidden = true;
         const token = ++request;
         reader.hidden = false;
         open.setAttribute("aria-expanded", "true");
         document.getElementById("clearStoryTitle").textContent = `${document.body.dataset.difficultyLabel} クリア後ストーリー`;
-        document.getElementById("clearStoryTitle").focus();
+        document.getElementById("clearStoryTitle").focus({ preventScroll: true });
+        reader.scrollIntoView({ behavior: "smooth", block: "start" });
         status.textContent = "お話を読み込んでいます…";
         clearPages();
         try {
@@ -114,7 +122,8 @@
         request++;
         reader.hidden = true;
         open.setAttribute("aria-expanded", "false");
-        open.focus();
-        container.scrollIntoView({ behavior: "smooth", block: "start" });
+        notice.hidden = !unlocked;
+        document.getElementById("stageBackLink").focus({ preventScroll: true });
+        document.getElementById("stageHeader").scrollIntoView({ behavior: "smooth", block: "start" });
     });
 })();
