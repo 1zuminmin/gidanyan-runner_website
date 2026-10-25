@@ -16,15 +16,15 @@
     >
 
     <link rel="stylesheet" href="../assets/css/common.css?v=20261008-navigation2">
-    <link rel="stylesheet" href="style.css?v=20261025-swipe1">
+    <link rel="stylesheet" href="style.css?v=20261025-story-notice">
 </head>
 
 <body data-difficulty="easy" data-difficulty-label="Easy">
 
     <main>
 
-        <header class="stage-header">
-            <a href="stage-select.html" class="back-link">
+        <header id="stageHeader" class="stage-header">
+            <a id="stageBackLink" href="stage-select.html" class="back-link">
                 <span aria-hidden="true">←</span> 戻る
             </a>
             <h1>Easy</h1>
@@ -93,11 +93,16 @@
             </section>
         </section>
     </main>
+    <aside id="storyNotice" class="story-notice" aria-label="漫画のお知らせ" hidden>
+        <button id="dismissStoryNotice" class="story-notice-close" type="button" aria-label="漫画のお知らせを閉じる">×</button>
+        <p role="status">続きの漫画が読めるよ！</p>
+        <button id="openStoryNotice" class="gida-btn" type="button" aria-controls="clearStoryReader"><span class="btn-text">クリア後の漫画を読む →</span></button>
+    </aside>
 
     <script src="manga-swipe.js?v=20261025-swipe1"></script>
     <script src="script.js?v=20261025-1425"></script>
 
-<script src="after-story.js?v=20261025-swipe1"></script>
+<script src="after-story.js?v=20261025-story-return"></script>
 </body>
 
 </html>

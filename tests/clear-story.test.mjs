@@ -6,7 +6,7 @@ const swipe=readFileSync(new URL('../game/manga-swipe.js',import.meta.url),'utf8
 const code=swipe+'\n'+readFileSync(new URL('../game/after-story.js',import.meta.url),'utf8');
 function setup(course='easy', list=[]) {
  const nodes=new Map();
- function get(id){if(!nodes.has(id))nodes.set(id,{hidden:true,clientWidth:320,scrollLeft:0,scrollTo({left}){this.scrollLeft=left;this.scroll?.()},children:[],classList:{contains:()=>true},setAttribute(){},focus(){},scrollIntoView(){},replaceChildren(){this.children=[]},appendChild(n){this.children.push(n)},addEventListener(t,f){this[t]=f}});return nodes.get(id)}
+ function get(id){if(!nodes.has(id))nodes.set(id,{hidden:true,clientWidth:320,scrollLeft:0,scrollTo({left}){this.scrollLeft=left;this.scroll?.()},children:[],classList:{contains:()=>true},setAttribute(){},focus(){this.focused=true},scrollIntoView(){this.scrolled=true},replaceChildren(){this.children=[]},appendChild(n){this.children.push(n)},addEventListener(t,f){this[t]=f}});return nodes.get(id)}
  const frame=get('unityFrame'); frame.src=`https://test.example/game/index.html?difficulty=${course}&loadId=2`;frame.contentWindow={};
  const window={location:{href:'https://test.example/game/stage1.html'},addEventListener(t,f){this[t]=f}};
  const document={body:{dataset:{difficulty:course,difficultyLabel:course}},getElementById:get,createElement:()=>({children:[],appendChild(n){this.children.push(n)},addEventListener(t,f){this[t]=f}})};
@@ -17,10 +17,10 @@ function setup(course='easy', list=[]) {
 for(const course of ['easy','normal','hard','ex'])test(`${course}: successful result unlocks matching story; retry hides it`,async()=>{
  const {get,send}=setup(course,['01.png','02.webp']);
  send({cleared:false});assert.equal(get('clearStory').hidden,course !== 'ex');
- send();assert.equal(get('clearStory').hidden,false);
- await get('openClearStory').click();
+ send();assert.equal(get('clearStory').hidden,false);assert.equal(get('storyNotice').hidden,false);
+ await get('openStoryNotice').click();assert.equal(get('storyNotice').hidden,true);
  assert.deepEqual(Array.from(get('clearStoryPages').children,x=>x.children[0].src),[`stories/${course}/01.png`,`stories/${course}/02.webp`]);
- send({type:'run-started'});assert.equal(get('clearStory').hidden,true);assert.equal(get('clearStoryReader').hidden,true);
+ send({type:'run-started'});assert.equal(get('storyNotice').hidden,true);assert.equal(get('clearStory').hidden,true);assert.equal(get('clearStoryReader').hidden,true);
 });
 test('wrong origin, iframe, course, load id or non-boolean clear never unlock',()=>{
  const {get,send}=setup();
@@ -45,5 +45,21 @@ test('Extra unlocks on failed result, rejects malformed results, and hides on re
  for(const cleared of [undefined,null,0,'false']){send({cleared});assert.equal(get('clearStory').hidden,true)}
  send({cleared:false});assert.equal(get('clearStory').hidden,false);
  await get('openClearStory').click();assert.equal(get('clearStoryPages').children[0].children[0].src,'stories/ex/01.png');
- send({type:'run-started'});assert.equal(get('clearStory').hidden,true);
+ send({type:'run-started'});assert.equal(get('storyNotice').hidden,true);assert.equal(get('clearStory').hidden,true);
+});
+
+test('notice can be dismissed without losing the story; returning from reader restores it',async()=>{
+ const {get,send}=setup('hard',['01.png']);send();
+ get('dismissStoryNotice').click();assert.equal(get('storyNotice').hidden,true);assert.equal(get('clearStory').hidden,false);
+ await get('openClearStory').click();get('closeClearStory').click();assert.equal(get('storyNotice').hidden,false);
+ send({type:'ready'});assert.equal(get('storyNotice').hidden,true);
+});
+
+for (const course of ['easy','normal','hard','ex']) test(`${course}: returning from manga shows header and Back link`,async()=>{
+ const {get,send}=setup(course,['01.png']);send();await get('openClearStory').click();
+ get('closeClearStory').click();
+ assert.equal(get('clearStoryReader').hidden,true);
+ assert.equal(get('stageHeader').scrolled,true);
+ assert.equal(get('stageBackLink').focused,true);
+ assert.equal(get('unityContainer').scrolled,undefined);
 });
