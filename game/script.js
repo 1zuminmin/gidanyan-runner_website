@@ -153,9 +153,7 @@ async function prepareManga() {
 }
 
 function updateActionButton() {
-    const isLastPage = currentPage === mangaPages.length - 1;
-
-    nextBtn.hidden = !isLastPage;
+    nextBtn.hidden = false;
     nextBtn.classList.remove("is-loading", "is-error");
     unityStatus.hidden = true;
     mangaRetryBtn.hidden = mangaState !== "error";
@@ -167,20 +165,14 @@ function updateActionButton() {
         mangaStatus.textContent = `漫画の${mangaImages.length + 1}ページ目を読み込めませんでした。「漫画を再試行」を押してください。`;
     }
 
-    if (!mangaImages[0] || (!isLastPage && !mangaImages[currentPage + 1])) {
+    if (mangaState !== "ready") {
         nextBtn.disabled = true;
-        btnText.textContent = "漫画読込中…";
+        btnText.textContent = "PLAY";
         if (mangaState !== "error") {
             nextBtn.classList.add("is-loading");
             mangaStatus.hidden = false;
             mangaStatus.textContent = mangaImages[0] ? "次のページを読み込んでいます…" : "漫画を読み込んでいます…";
         }
-        return;
-    }
-
-    if (!isLastPage) {
-        nextBtn.disabled = true;
-        btnText.textContent = "PLAY";
         return;
     }
 
@@ -201,7 +193,7 @@ function updateActionButton() {
 
     nextBtn.disabled = true;
     nextBtn.classList.add("is-loading");
-    btnText.textContent = "ゲーム読込中…";
+    btnText.textContent = "PLAY";
     unityStatus.textContent = "ゲームを準備しています。しばらくお待ちください。";
 }
 
@@ -280,7 +272,6 @@ window.createMangaSwipe(mangaTrack, index => {
 nextBtn.addEventListener("click", () => {
     if (nextBtn.disabled) return;
 
-    if (currentPage !== mangaPages.length - 1) return;
 
     if (unityState === "error") {
         startUnityLoad(true);
@@ -291,7 +282,7 @@ nextBtn.addEventListener("click", () => {
         return;
     }
 
-    // 最後のページでPLAYを押した場合
+    // 漫画のどのページからでもPLAYで開始する
     mangaReader.hidden = true;
     unityStatus.hidden = true;
 
