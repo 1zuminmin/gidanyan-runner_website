@@ -8,15 +8,14 @@
     const pages = document.getElementById("clearStoryPages");
     const navigation = document.getElementById("clearStoryNavigation");
     const pageNumber = document.getElementById("clearStoryPageNumber");
-    const prev = document.getElementById("clearStoryPrev");
-    const next = document.getElementById("clearStoryNext");
+
     let images = [];
     let currentPage = 0;
     const clearPages = () => {
         images = [];
         currentPage = 0;
         navigation.hidden = true;
-        prev.disabled = next.disabled = true;
+        swipeReader.reset();
         pageNumber.textContent = "";
         pages.replaceChildren();
     };
@@ -29,16 +28,14 @@
     const showPage = index => {
         if (index < 0 || index >= images.length) return;
         currentPage = index;
-        images.forEach((image, i) => { image.hidden = i !== index; });
+
         images[index].loading = "eager";
         pageNumber.textContent = `${index + 1} / ${images.length}`;
-        prev.disabled = index === 0;
-        next.disabled = index === images.length - 1;
+
         navigation.hidden = false;
         updatePageStatus();
     };
-    prev.addEventListener("click", () => { if (!prev.disabled) showPage(currentPage - 1); });
-    next.addEventListener("click", () => { if (!next.disabled) showPage(currentPage + 1); });
+    const swipeReader = window.createMangaSwipe(pages, showPage);
     const course = document.body.dataset.difficulty;
     let request = 0;
     let unlocked = false;
@@ -91,7 +88,7 @@
                 image.alt = `${document.body.dataset.difficultyLabel} クリア後ストーリー ${index + 1}ページ目`;
                 image.loading = index === 0 ? "eager" : "lazy";
                 image.decoding = "async";
-                image.hidden = true;
+                image.hidden = false;
                 image.storyState = "loading";
                 image.addEventListener("load", () => {
                     image.storyState = "ready";
@@ -103,7 +100,10 @@
                 });
                 image.src = `stories/${course}/${name}`;
                 images.push(image);
-                pages.appendChild(image);
+                const slide = document.createElement("div");
+                slide.className = "manga-slide";
+                slide.appendChild(image);
+                pages.appendChild(slide);
             });
             showPage(0);
         } catch {

@@ -16,7 +16,7 @@
     >
 
     <link rel="stylesheet" href="../assets/css/common.css?v=20261008-navigation2">
-    <link rel="stylesheet" href="style.css?v=20261023-story-pages">
+    <link rel="stylesheet" href="style.css?v=20261025-swipe1">
 </head>
 
 <body data-difficulty="ex" data-difficulty-label="EX">
@@ -31,7 +31,7 @@
         </header>
 
         <section id="mangaReader" aria-label="ゲーム開始前の漫画">
-            <div class="manga-box">
+            <div id="mangaTrack" class="manga-swipe" tabindex="0" role="region" aria-label="開始前の漫画。左右にスワイプして読む"><div class="manga-slide"><div class="manga-box">
 
                 <img
                 id="mangaImage"
@@ -46,6 +46,8 @@
                 >
             </div>
 
+            </div></div>
+            <p class="swipe-hint">← 左右にスワイプして読んでね →</p>
             <p id="mangaStatus" class="unity-status" role="status" aria-live="polite">漫画を読み込んでいます…</p>
             <button id="mangaRetryBtn" class="gida-btn manga-retry" type="button" hidden>
                 <span class="btn-text">漫画を再試行</span>
@@ -55,14 +57,9 @@
                 1 / 4
             </div>
 
-            <div class="manga-navigation" role="group" aria-label="漫画のページ操作">
-                <button id="prevBtn" class="gida-btn" type="button" disabled>
-                    <span class="btn-text">BACK</span>
-                </button>
-                <button id="nextBtn" class="gida-btn" type="button" disabled>
-                    <span class="btn-text">漫画読込中…</span>
-                </button>
-            </div>
+            <button id="nextBtn" class="gida-btn manga-play" type="button" hidden disabled>
+                <span class="btn-text">PLAY</span>
+            </button>
         </section>
 
         <p id="unityStatus" class="unity-status" role="status" aria-live="polite" hidden></p>
@@ -87,22 +84,20 @@
             <section id="clearStoryReader" hidden>
                 <h2 id="clearStoryTitle" tabindex="-1">プレイ後ストーリー</h2>
                 <p id="clearStoryStatus" role="status"></p>
-                <div id="clearStoryPages"></div>
+                <div id="clearStoryPages" class="manga-swipe" tabindex="0" role="region" aria-label="プレイ後の漫画。左右にスワイプして読む"></div>
                 <div id="clearStoryNavigation" hidden>
                     <p id="clearStoryPageNumber" class="manga-page" aria-live="polite"></p>
-                    <div class="manga-navigation" role="group" aria-label="クリア後の漫画のページ操作">
-                        <button id="clearStoryPrev" class="gida-btn" type="button" disabled><span class="btn-text">BACK</span></button>
-                        <button id="clearStoryNext" class="gida-btn" type="button" disabled><span class="btn-text">NEXT</span></button>
-                    </div>
+                    <p class="swipe-hint">← 左右にスワイプして読んでね →</p>
                 </div>
                 <button id="closeClearStory" class="back-link" type="button">リザルト画面に戻る</button>
             </section>
         </section>
     </main>
 
-    <script src="script.js?v=20261025-manga"></script>
+    <script src="manga-swipe.js?v=20261025-swipe1"></script>
+    <script src="script.js?v=20261025-swipe1"></script>
 
-<script src="after-story.js?v=20261025-extra-result"></script>
+<script src="after-story.js?v=20261025-swipe1"></script>
 </body>
 
 </html>

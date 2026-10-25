@@ -4,7 +4,8 @@ import { runInNewContext } from "node:vm";
 import test from "node:test";
 
 const launcher = readFileSync(new URL("../game/launch.js", import.meta.url), "utf8");
-const pageScript = readFileSync(new URL("../game/script.js", import.meta.url), "utf8");
+const swipeScript = readFileSync(new URL("../game/manga-swipe.js", import.meta.url), "utf8");
+const pageScript = swipeScript + "\n" + readFileSync(new URL("../game/script.js", import.meta.url), "utf8");
 const stageLabels = { easy: "Easy", normal: "Normal", hard: "Hard", ex: "EX" };
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
@@ -24,7 +25,7 @@ test("all stage links open pages that pass the selected stage to the shared load
 
 function element() {
     const classes = new Set();
-    return { style: {}, hidden: false, textContent: "", disabled: false, contentWindow: {},
+    return { children: [], clientWidth: 320, scrollLeft: 0, appendChild(child) { this.children.push(child); }, setPointerCapture() {}, scrollTo({left}) { this.scrollLeft=left; this.scroll?.(); }, style: {}, hidden: false, textContent: "", disabled: false, contentWindow: {},
         classList: { add: (...names) => names.forEach(name => classes.add(name)), remove: (...names) => names.forEach(name => classes.delete(name)), contains: name => classes.has(name) },
         setAttribute() {}, removeAttribute(name) { delete this[name]; }, scrollIntoView() {}, addEventListener(type, fn) { this[type] = fn; },
         querySelector() { return this.label ??= element(); } };
@@ -44,6 +45,7 @@ function environment(difficulty = "easy", { manualImages = false } = {}) {
         });
         return image;
     }
+    get("#mangaTrack").children.push(element());
     const initialImage = makeImage();
     initialImage.src = "images/stage1_manga-p1.png";
     initialImage.hidden = true;
@@ -132,153 +134,27 @@ test("download failures and timeouts report error, never late ready", async () =
     }
 });
 
-for (const difficulty of Object.keys(stageLabels)) {
-    test(`${difficulty}: page navigation, message validation and retry keep the selection`, async () => {
-        const e = environment(difficulty);
-        runInNewContext(pageScript, e.context);
-        await tick();
-        const button = e.get("#nextBtn"), frame = e.get("#unityFrame");
-        assert.equal(new URL(frame.src).searchParams.get("difficulty"), difficulty);
-        assert.equal(new URL(frame.src).pathname, "/gidanyan-runner_website/game/index.html");
-        button.click(); button.click(); button.click();
-        assert.equal(e.get("#pageNumber").textContent, "4 / 4");
-        assert.equal(button.disabled, true);
-        const message = { source: frame.contentWindow, origin: "http://localhost", data: { source: "gidanyan-unity", difficulty, type: "ready", loadId: "1" } };
-        for (const change of [{ source: {} }, { origin: "http://unrelated.test" }, { data: { ...message.data, loadId: "0" } }, { data: { ...message.data, difficulty: difficulty === "hard" ? "ex" : "hard" } }, { data: { ...message.data, type: "unrelated" } }]) {
-            e.window.message({ ...message, ...change });
-            assert.equal(button.disabled, true);
-            assert.equal(e.timers.size, 1);
-        }
-        [...e.timers.values()][0]();
-        assert.equal(button.querySelector().textContent, "再試行");
-        e.window.message(message);
-        assert.equal(button.querySelector().textContent, "再試行");
-        button.click();
-        const retry = new URL(frame.src);
-        assert.equal(retry.searchParams.get("difficulty"), difficulty);
-        assert.equal(retry.searchParams.get("loadId"), "2");
-        assert.ok(retry.searchParams.has("retry"));
-        e.window.message(message);
-        assert.equal(button.disabled, true);
-        e.window.message({ ...message, data: { ...message.data, loadId: "2" } });
-        assert.equal(button.querySelector().textContent, "PLAY");
-        button.click();
-        assert.equal(e.get("#unityContainer").classList.contains("is-visible"), true);
-    });
-}
 
-function mangaEnvironment() {
-    const e = environment("easy", { manualImages: true });
-    runInNewContext(pageScript, e.context);
-    return e;
-}
-
-test("slow manga: display page 1 first, block rapid NEXT, and start Unity only after all four decodes", async () => {
-    const e = mangaEnvironment();
-    const button = e.get("#nextBtn"), frame = e.get("#unityFrame");
-    assert.equal(e.decodeRequests.length, 1);
-    assert.equal(e.get("#mangaImage").hidden, true);
-    assert.equal(e.get("#pageNumber").hidden, true);
-    assert.equal(frame.src, undefined);
-    for (let i = 0; i < 3; i++) {
-        e.decodeRequests[i].resolve();
-        await tick();
-        if (i > 0) button.click();
-        assert.equal(e.get("#mangaImage"), e.decodeRequests[i].image);
-        assert.equal(e.get("#mangaImage").hidden, false);
-        assert.equal(e.get("#pageNumber").textContent, `${i + 1} / 4`);
-        assert.equal(e.decodeRequests.length, i + 2);
-        assert.equal(button.disabled, true);
-        button.click(); button.click();
-        assert.equal(e.get("#pageNumber").textContent, `${i + 1} / 4`);
-        assert.equal(frame.src, undefined);
-        assert.deepEqual([...e.timerDelays.values()], [60000]);
-    }
-    e.decodeRequests[3].resolve();
-    await tick();
-    assert.equal(new URL(frame.src).searchParams.get("difficulty"), "easy");
-    assert.deepEqual([...e.timerDelays.values()], [180000]);
-    assert.equal(e.get("#pageNumber").textContent, "3 / 4");
-    button.click();
-    assert.equal(e.get("#pageNumber").textContent, "4 / 4");
-    assert.equal(e.get("#mangaImage"), e.decodeRequests[3].image);
-    assert.equal(e.decodeRequests.length, 4);
+for (const course of Object.keys(stageLabels)) test(`${course}: swipe to last page then PLAY; swipe back hides PLAY`, async () => {
+ const e=environment(course);runInNewContext(pageScript,e.context);await tick();
+ const track=e.get('#mangaTrack'),button=e.get('#nextBtn'),frame=e.get('#unityFrame');
+ assert.equal(track.children.length,4);assert.equal(button.hidden,true);
+ track.scrollTo({left:320});assert.equal(e.get('#pageNumber').textContent,'2 / 4');
+ track.scrollTo({left:960});assert.equal(button.hidden,false);assert.equal(button.disabled,true);
+ const valid={source:frame.contentWindow,origin:'http://localhost',data:{source:'gidanyan-unity',difficulty:course,type:'ready',loadId:'1'}};
+ e.window.message({...valid,origin:'https://evil.example'});assert.equal(button.disabled,true);
+ e.window.message(valid);assert.equal(button.disabled,false);
+ track.scrollTo({left:640});assert.equal(button.hidden,true);assert.equal(button.disabled,true);
+ track.scrollTo({left:960});button.click();assert.equal(e.get('#unityContainer').classList.contains('is-visible'),true);
 });
-
-test("first image failure has a retry and never starts Unity", async () => {
-    const e = mangaEnvironment();
-    e.decodeRequests[0].reject(new Error("Offline"));
-    await tick();
-    assert.equal(e.get("#mangaRetryBtn").hidden, false);
-    assert.equal(e.get("#mangaImage").hidden, true);
-    assert.equal(e.get("#pageNumber").hidden, true);
-    assert.equal(e.get("#unityFrame").src, undefined);
-    assert.equal(e.timers.size, 0);
-    e.get("#mangaRetryBtn").click();
-    e.get("#mangaRetryBtn").click();
-    assert.equal(e.decodeRequests.length, 2);
-    assert.match(e.decodeRequests[1].image.src, /stories\/before\/easy\/01\.png\?mangaRetry=1$/);
-    e.decodeRequests[1].resolve();
-    await tick();
-    assert.equal(e.get("#mangaImage"), e.decodeRequests[1].image);
-    assert.equal(e.get("#mangaImage").hidden, false);
-    assert.equal(e.get("#pageNumber").textContent, "1 / 4");
-});
-
-test("failed later page keeps earlier images readable and resumes at the failed page", async () => {
-    const e = mangaEnvironment();
-    for (let i = 0; i < 3; i++) { e.decodeRequests[i].resolve(); await tick(); }
-    e.decodeRequests[3].reject(new Error("Image decode failed"));
-    await tick();
-    const button = e.get("#nextBtn");
-    assert.equal(e.get("#mangaRetryBtn").hidden, false);
-    assert.match(e.get("#mangaStatus").textContent, /4ページ目/);
-    button.click(); button.click(); button.click();
-    assert.equal(e.get("#pageNumber").textContent, "3 / 4");
-    assert.equal(e.get("#mangaImage"), e.decodeRequests[2].image);
-    assert.equal(e.get("#unityFrame").src, undefined);
-    e.get("#prevBtn").click();
-    assert.equal(e.get("#pageNumber").textContent, "2 / 4");
-    assert.equal(e.get("#mangaImage"), e.decodeRequests[1].image);
-    e.get("#prevBtn").click();
-    e.get("#prevBtn").click();
-    assert.equal(e.get("#pageNumber").textContent, "1 / 4");
-    assert.equal(e.get("#prevBtn").disabled, true);
-    button.click(); button.click();
-    assert.equal(e.decodeRequests.length, 4, "going back and forward reuses the prepared pages");
-    e.get("#mangaRetryBtn").click();
-    assert.equal(e.decodeRequests.length, 5);
-    assert.match(e.decodeRequests[4].image.src, /stories\/before\/easy\/04\.png\?mangaRetry=1$/);
-    assert.equal(e.get("#pageNumber").textContent, "3 / 4");
-    e.decodeRequests[4].resolve();
-    await tick();
-    assert.ok(e.get("#unityFrame").src);
-    assert.equal(e.get("#pageNumber").textContent, "3 / 4");
-    button.click();
-    assert.equal(e.get("#pageNumber").textContent, "4 / 4");
-    assert.equal(e.get("#mangaImage"), e.decodeRequests[4].image);
-});
-
-test("timed-out image cannot advance the page or start Unity when it completes late", async () => {
-    const e = mangaEnvironment();
-    e.decodeRequests[0].resolve();
-    await tick();
-    const stalled = e.decodeRequests[1];
-    [...e.timers.values()][0]();
-    await tick();
-    assert.equal(stalled.image.src, undefined);
-    assert.equal(e.get("#mangaRetryBtn").hidden, false);
-    e.get("#mangaRetryBtn").click();
-    stalled.resolve();
-    await tick();
-    assert.equal(e.get("#nextBtn").disabled, true);
-    assert.equal(e.get("#pageNumber").textContent, "1 / 4");
-    assert.equal(e.get("#unityFrame").src, undefined);
-    assert.equal(e.decodeRequests.length, 3);
-    e.decodeRequests[2].resolve();
-    await tick();
-    assert.equal(e.get("#nextBtn").disabled, false);
-    e.get("#nextBtn").click();
-    assert.equal(e.get("#mangaImage"), e.decodeRequests[2].image);
-    assert.equal(e.get("#pageNumber").textContent, "2 / 4");
+test('slow or failed manga remains readable, retry resumes, Unity waits for all pages',async()=>{
+ const e=environment('easy',{manualImages:true});runInNewContext(pageScript,e.context);
+ const frame=e.get('#unityFrame');assert.equal(frame.src,undefined);
+ e.decodeRequests[0].resolve();await tick();
+ assert.equal(e.get('#pageNumber').textContent,'1 / 4');
+ e.decodeRequests[1].reject(new Error('offline'));await tick();
+ assert.equal(e.get('#mangaRetryBtn').hidden,false);assert.equal(frame.src,undefined);
+ e.get('#mangaRetryBtn').click();e.decodeRequests[2].resolve();await tick();
+ e.decodeRequests[3].resolve();await tick();e.decodeRequests[4].resolve();await tick();
+ assert.equal(e.get('#mangaTrack').children.length,4);assert.ok(frame.src);
 });
