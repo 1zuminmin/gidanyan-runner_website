@@ -11,3 +11,14 @@
 .hall-of-fame details{text-align:left;font-size:13px;overflow-wrap:anywhere;}.hall-of-fame summary{cursor:pointer;padding:10px 0;}.hall-of-fame .ranking-note{text-align:left;color:#655640;}
 
 .ranking-card[hidden]{display:none;}
+
+/* Match the rounded lettering and orange/cream buttons used throughout the site. */
+.ranking-card,.ranking-link{font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;font-weight:700;}
+.ranking-card h2,.ranking-card h3,.ranking-card strong,.ranking-card .hall-badge,.ranking-card button{font-weight:800;}
+.ranking-card input,.ranking-card button{font-family:inherit;}
+.ranking-card .ranking-note{line-height:1.9;}
+.hall-of-fame .hall-player{font-size:clamp(12px,3.4vw,14px);line-height:1.9;}
+.hall-of-fame dl{column-gap:10px;font-size:clamp(11px,3.2vw,16px);}
+.hall-score strong{font-size:clamp(26px,7.3vw,44px);}
+.story-notice .ranking-notice-link{margin-top:8px;background:#fff;}
+.story-notice .ranking-notice-link:hover{background:#fff0d6;}
