@@ -264,3 +264,9 @@ Unity側の `Tools > Gidanyan Runner > Build Web (All Stages)` を使い、WebBo
 既存テストは `node --test tests/difficulty.test.mjs`。撮影機能のブラウザテストはPlaywrightとChromeを使い、`node --test tests/photo.browser.mjs` で実行します（必要なら `npm install --no-save --package-lock=false playwright`、Edgeを使う場合は環境変数 `PHOTO_TEST_BROWSER=msedge`）。ブラウザテストはテスト用映像のみを使用し、実際のカメラを起動しません。
 
 実機ではiPhoneのSafari・AndroidのChromeで、許可、前後カメラ切替、保存／長押し保存、撮り直し、ホームへの復帰を確認してください。
+
+## EXランキング・殿堂入り
+
+ローカルの起動方法、Unityとの接続、公開時に必要な設定は [server/README.md](server/README.md) を参照してください。共有ランキングの公開先はまだ未設定です。
+
+ランキング内の殿堂入りには、展示中の途中記録（143:46.3、200,751 m、キャンディ9,497個）を表示しています。現在のEX式（距離＋キャンディ×3,750）で参考スコアは35,814,501 pt。時間の直接加点や通常順位への混入はありません。

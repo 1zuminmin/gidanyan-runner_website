@@ -1,0 +1,27 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/game/"><title>ランキングの動作確認</title><link rel="stylesheet" href="../assets/css/common.css"><link rel="stylesheet" href="ranking.css"><body><main style="padding:16px;max-width:720px;margin:auto"><h1>ランキングのローカル確認</h1><p>これはテスト用の記録です。本物のゲーム結果ではありません。</p><p>開始→リザルト→ニックネームを入力して登録、の順に試せます。</p><button id="begin">テストプレイを開始</button><button id="finish" disabled>テストのリザルトを表示</button><p><a href="ranking.html">ランキングを見る</a> ／ <a href="../index.html">ホームへ戻る</a></p><iframe id="unityFrame" hidden></iframe><section class="ranking-card" data-ranking data-ranking-mode="result" aria-label="EXのプレイ結果" hidden>
+<h2>今回のチャレンジ</h2>
+<p class="ranking-best" data-run-score></p>
+<p data-local-best></p>
+<form hidden><label for="rankingName">ニックネーム（12文字以内）</label><input id="rankingName" maxlength="12" autocomplete="nickname" required>
+<p class="ranking-note">登録すると、ニックネームと記録がランキングに公開されます。本名や連絡先は書かないでね。</p>
+<button class="gida-btn" type="submit"><span class="btn-text">この記録を登録する</span></button></form>
+<p role="status" data-ranking-status></p>
+<a class="ranking-link" href="ranking.html">🐾 EXのスコアランキングを見る →</a>
+</section></main><script>
+const frame=document.getElementById('unityFrame');frame.src='about:blank?difficulty=ex&loadId=demo';let score=3750;
+function send(data){window.dispatchEvent(new MessageEvent('message',{source:frame.contentWindow,origin:'null',data:{source:'gidanyan-unity',difficulty:'ex',loadId:'demo',...data}}))}
+document.getElementById('begin').onclick=()=>{send({type:'run-started'});document.getElementById('finish').disabled=true;setTimeout(()=>document.getElementById('finish').disabled=false,1200)};
+document.getElementById('finish').onclick=()=>{send({type:'result-score',result:{ruleset:'ex-v1',score:score+22,distance:22,candy:1,elapsed:1}});document.getElementById('finish').disabled=true};
+</script><script type="module">
+if(new URLSearchParams(location.search).has('sample')){
+ document.querySelector('h1').textContent='プレイ後の表示サンプル';
+ const main=document.querySelector('main');
+ for(const node of main.children){if(!node.matches('h1, [data-ranking]'))node.hidden=true;}
+ const root=document.querySelector('[data-ranking]');root.hidden=false;
+ root.querySelector('[data-run-score]').textContent='今回のスコア：74,949 pt';
+ root.querySelector('[data-local-best]').textContent='このブラウザの自己ベスト：82,500 pt';
+ const form=root.querySelector('form');form.hidden=false;form.querySelector('input').value='ぎだにゃん';
+ root.querySelector('[data-ranking-status]').textContent='表示確認用のサンプルです。実際のランキングには登録されません。';
+ form.addEventListener('submit',event=>{event.preventDefault();root.querySelector('[data-ranking-status]').textContent='登録後の表示例：記録を受け付けました！ 自己ベストがランキングに残ります。';form.querySelector('button').disabled=true;});
+}else{await import('./ranking-client.js?v=20261025-result2');}
+</script></body></html>

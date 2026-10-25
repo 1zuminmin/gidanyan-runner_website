@@ -21,6 +21,12 @@ function startGidanyanGame(config, loaderUrl) {
             type: state === "started" ? "run-started" : "result",
             cleared: state === "cleared" }, window.location.origin);
     };
+    window.gidanyanRunResult = (reportedDifficulty, score, distance, candy, elapsed) => {
+        if (!stageIsReady || difficulty !== "ex" || reportedDifficulty !== difficulty) return;
+        if (![score, distance, candy].every(n => Number.isSafeInteger(n) && n >= 0) || !Number.isFinite(elapsed) || elapsed < 0) return;
+        window.parent.postMessage({ source: "gidanyan-unity", loadId, difficulty, type: "result-score",
+            result: { ruleset: "ex-v1", score, distance, candy, elapsed } }, window.location.origin);
+    };
     const fail = error => {
         if (finished) return;
         finished = true;
