@@ -17,6 +17,7 @@
 
     <link rel="stylesheet" href="../assets/css/common.css?v=20261008-navigation2">
     <link rel="stylesheet" href="style.css?v=20261025-story-notice">
+<link rel="stylesheet" href="ranking.css?v=20261025-result2">
 </head>
 
 <body data-difficulty="ex" data-difficulty-label="EX">
@@ -78,6 +79,16 @@
         </div>
 
 
+        <section class="ranking-card" data-ranking data-ranking-mode="result" aria-label="EXのプレイ結果" hidden>
+<h2>今回のチャレンジ</h2>
+<p class="ranking-best" data-run-score></p>
+<p data-local-best></p>
+<form hidden><label for="rankingName">ニックネーム（12文字以内）</label><input id="rankingName" maxlength="12" autocomplete="nickname" required>
+<p class="ranking-note">登録すると、ニックネームと記録がランキングに公開されます。本名や連絡先は書かないでね。</p>
+<button class="gida-btn" type="submit"><span class="btn-text">この記録を登録する</span></button></form>
+<p role="status" data-ranking-status></p>
+<a class="ranking-link" href="ranking.html">🐾 EXのスコアランキングを見る →</a>
+</section>
         <section id="clearStory" class="clear-story" aria-label="プレイ後ストーリー" hidden>
             <p class="clear-message" role="status">プレイしてくれてありがとう！ 続きのお話を読んでみよう。</p>
             <button id="openClearStory" class="gida-btn" type="button" aria-expanded="false" aria-controls="clearStoryReader"><span class="btn-text">プレイ後ストーリーを読む</span></button>
@@ -103,6 +114,7 @@
     <script src="script.js?v=20261025-1425"></script>
 
 <script src="after-story.js?v=20261025-ex-story"></script>
+<script type="module" src="ranking-client.js?v=20261025-result2"></script>
 </body>
 
 </html>
