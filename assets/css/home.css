@@ -53,19 +53,12 @@ header {
 .photo-entry .btn-text small { display: block; margin-top: 4px; color: #666; font-size: 0.75rem; line-height: 1.4; letter-spacing: 0; }
 
 /* ========================================
-   index.html：ダミーバナー
+   index.html：大学祭・協力団体バナー
 ======================================== */
 
-.banner-box {
-    min-height: 140px;
-
+.banner-section {
     margin-bottom: 20px;
-    padding: 20px;
-
-    background: #ffffff;
-
-    border: 4px dashed #000000;
-    border-radius: 25px;
+    padding: 16px 0;
 
     display: flex;
     flex-direction: column;
@@ -73,26 +66,22 @@ header {
     align-items: center;
 }
 
-.banner-box h3 {
+.banner-section h3 {
     margin-bottom: 10px;
 
     color: #ff9800;
 }
 
-.banner-box p {
-    color: #666666;
-}
-
-.supporter-banner {
+.site-banner {
     display: block;
-    width: 180px;
+    width: 300px;
     max-width: 100%;
     min-width: 0;
     min-height: 44px;
     border-radius: 8px;
 }
 
-.supporter-banner img {
+.site-banner img {
     display: block;
     width: 100%;
     max-width: 100%;
@@ -100,12 +89,12 @@ header {
     border-radius: inherit;
 }
 
-.supporter-banner:focus-visible {
+.site-banner:focus-visible {
     outline: 3px solid #9a5700;
     outline-offset: 4px;
 }
 
-.supporter-banner:active {
+.site-banner:active {
     opacity: 0.8;
 }
 
