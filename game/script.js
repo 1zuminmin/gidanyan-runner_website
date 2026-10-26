@@ -15,7 +15,7 @@ const courseMangaPages = {
         "stories/before/normal/01.jpg",
         "stories/before/normal/02.jpg",
         "stories/before/normal/03.jpg",
-        "stories/before/normal/04.jpg"
+        "stories/before/normal/04.png"
     ],
     "hard": [
         "stories/before/hard/01.png",

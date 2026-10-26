@@ -3,23 +3,14 @@
 .ranking-card p{margin:12px 0;}
 .ranking-card ol{padding:0;list-style:none;}.ranking-card li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:14px 8px;border-bottom:2px solid #e5d7b9;overflow-wrap:anywhere;}.ranking-card li:first-child{background:#ffe1a1;border-radius:14px;}
 .ranking-card input{box-sizing:border-box;width:100%;border:3px solid #222;border-radius:14px;padding:12px;font:inherit;background:white;}.ranking-card button{font:inherit;cursor:pointer;min-height:48px;}.ranking-card .gida-btn{margin:12px 0;background:#ff9800;width:100%;padding:12px;border:3px solid #222;border-radius:30px;}.ranking-card .gida-btn .btn-text{color:#222;font-size:18px;}.ranking-card button:disabled{opacity:.55;cursor:default;}.ranking-card form[hidden]{display:none;}.ranking-note{font-size:13px;}.ranking-best{background:white;padding:12px;border-radius:14px;}.ranking-link{display:block;text-align:center;color:#222;margin:16px 0;font-size:18px;}
-.hall-of-fame{background:#fffaf0;border:3px solid #b86a08;border-radius:22px;padding:20px 16px;margin:18px 0 26px;box-shadow:0 5px 0 #f2d5a2;text-align:center;}
-.hall-of-fame .hall-badge{display:inline-block;background:#ff9800;border-radius:999px;padding:3px 16px;margin:0;color:#30200c;font-size:12px;font-weight:bold;letter-spacing:.1em;}
-.hall-of-fame h3{font-size:26px;margin:10px 0 4px;}.hall-of-fame .hall-player{font-size:14px;margin:4px 0;}
-.hall-of-fame .hall-score{margin:12px 0 18px;line-height:1.3;}.hall-score strong{font-size:clamp(28px,8vw,46px);color:#974900;font-variant-numeric:tabular-nums;}.hall-score span{font-size:18px;}
-.hall-of-fame dl{display:grid;grid-template-columns:auto 1fr;gap:8px;text-align:left;font-size:clamp(12px,3.6vw,16px);background:white;border-radius:14px;padding:12px;}.hall-of-fame dd{margin:0;text-align:right;}
-.hall-of-fame details{text-align:left;font-size:13px;overflow-wrap:anywhere;}.hall-of-fame summary{cursor:pointer;padding:10px 0;}.hall-of-fame .ranking-note{text-align:left;color:#655640;}
 
 .ranking-card[hidden]{display:none;}
 
 /* Match the rounded lettering and orange/cream buttons used throughout the site. */
 .ranking-card,.ranking-link{font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;font-weight:700;}
-.ranking-card h2,.ranking-card h3,.ranking-card strong,.ranking-card .hall-badge,.ranking-card button{font-weight:800;}
+.ranking-card h2,.ranking-card h3,.ranking-card strong,.ranking-card button{font-weight:800;}
 .ranking-card input,.ranking-card button{font-family:inherit;}
 .ranking-card .ranking-note{line-height:1.9;}
-.hall-of-fame .hall-player{font-size:clamp(12px,3.4vw,14px);line-height:1.9;}
-.hall-of-fame dl{column-gap:10px;font-size:clamp(11px,3.2vw,16px);}
-.hall-score strong{font-size:clamp(26px,7.3vw,44px);}
 .story-notice .ranking-notice-link{margin-top:8px;background:#fff;}
 .story-notice .ranking-notice-link:hover{background:#fff0d6;}
 
