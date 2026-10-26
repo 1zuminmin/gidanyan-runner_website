@@ -73,3 +73,11 @@ test('EX registration notice scrolls to the same-page form without leaving the r
  assert.equal(get('recordRegistration').focused,true);
  assert.equal(get('clearStory').hidden,false);
 });
+
+test('story button hides during reading, returns on image error and after closing',async()=>{
+ const {get,send}=setup('ex',['01.png']);send();assert.equal(get('openClearStory').hidden,false);
+ await get('openClearStory').click();assert.equal(get('openClearStory').hidden,true);
+ const image=get('clearStoryPages').children[0].children[0];image.error();assert.equal(get('openClearStory').hidden,false);
+ image.load();assert.equal(get('openClearStory').hidden,true);
+ get('closeClearStory').click();assert.equal(get('openClearStory').hidden,false);
+});

@@ -10,6 +10,7 @@ function startGidanyanGame(config, loaderUrl) {
     let finished = false;
     let stageIsReady = false;
     let timeout;
+    let lastPercent = -1;
 
     const notifyParent = (type, message = "") => {
         window.parent.postMessage({ source: "gidanyan-unity", type, loadId, difficulty, message }, window.location.origin);
@@ -56,8 +57,14 @@ function startGidanyanGame(config, loaderUrl) {
         script.onload = () => {
             Promise.resolve().then(() => createUnityInstance(canvas, config, progress => {
                 if (finished) return;
-                fill.style.width = `${Math.round(progress * 100)}%`;
-                status.textContent = `ゲームを読み込んでいます ${Math.round(progress * 100)}%`;
+                if (!Number.isFinite(progress)) return;
+                const percent = Math.max(lastPercent, Math.round(Math.max(0, Math.min(1, progress)) * 100));
+                fill.style.width = `${percent}%`;
+                status.textContent = percent === 100 ? "お出かけ準備中だにゃ！（読み込み完了・起動準備中）" : `お出かけ準備中だにゃ！ ${percent}%`;
+                if (percent !== lastPercent) {
+                    lastPercent = percent;
+                    window.parent.postMessage({ source: "gidanyan-unity", type: "progress", loadId, difficulty, progress: percent }, window.location.origin);
+                }
             })).then(resolve, reject);
         };
         script.onerror = () => reject(new Error("ゲームの読み込みファイルを取得できませんでした。再試行してください。"));

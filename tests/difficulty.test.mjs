@@ -159,3 +159,23 @@ test('slow or failed manga remains readable, retry resumes, Unity waits for all 
  e.decodeRequests[3].resolve();await tick();e.decodeRequests[4].resolve();await tick();
  assert.equal(e.get('#mangaTrack').children.length,4);assert.ok(frame.src);
 });
+
+test('progress from the current frame updates visible bar without enabling PLAY or cancelling timeout',async()=>{
+ const e=environment('easy');runInNewContext(pageScript,e.context);await tick();
+ const frame=e.get('#unityFrame');
+ const event={source:frame.contentWindow,origin:'http://localhost',data:{source:'gidanyan-unity',difficulty:'easy',type:'progress',loadId:'1',progress:42}};
+ e.window.message({...event,origin:'https://evil.example'});assert.equal(e.get('#unityProgress').value,0);
+ e.window.message(event);assert.equal(e.get('#unityProgress').value,42);assert.match(e.get('#unityStatus').textContent,/42%/);
+ assert.equal(e.get('#unityProgress').hidden,false);assert.equal(e.get('#nextBtn').disabled,true);assert.ok(e.timers.size>0);
+ e.window.message({...event,data:{...event.data,progress:100}});assert.match(e.get('#unityStatus').textContent,/お出かけ準備中だにゃ！/);
+ e.window.message({...event,data:{...event.data,type:'ready'}});assert.equal(e.get('#unityProgress').hidden,true);assert.equal(e.get('#nextBtn').disabled,false);
+});
+test('Unity forwards actual download progress to parent and waits for scene ready',async()=>{
+ const e=environment('easy');let report;
+ e.context.createUnityInstance=async(canvas,config,progress)=>{report=progress;return {SetFullscreen(){}}};
+ runInNewContext(launcher+'\nstartGidanyanGame({}, "loader.js");',e.context);
+ e.scripts[0].onload();await tick();report(0.42);report(1);
+ assert.equal(e.messages[0].type,'progress');assert.equal(e.messages[0].progress,42);assert.equal(e.messages[1].progress,100);
+ assert.ok(!e.messages.some(m=>m.type==='ready'));
+ e.window.gidanyanStageLoaded('easy','');await tick();assert.equal(e.messages.at(-1).type,'ready');
+});

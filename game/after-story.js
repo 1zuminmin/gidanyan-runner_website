@@ -35,6 +35,7 @@
     };
     const updatePageStatus = () => {
         const image = images[currentPage];
+        open.hidden = image?.storyState !== "error";
         status.textContent = !image ? "" : image.storyState === "error"
             ? `このページを読み込めませんでした。上の「${storyTiming}ストーリーを読む」で再試行できます。`
             : image.storyState === "ready" ? "" : "ページを読み込んでいます…";
@@ -59,6 +60,7 @@
         request++;
         panel.hidden = true;
         reader.hidden = true;
+        open.hidden = false;
         open.setAttribute("aria-expanded", "false");
         clearPages();
     };
@@ -83,6 +85,7 @@
         notice.hidden = true;
         const token = ++request;
         reader.hidden = false;
+        open.hidden = true;
         open.setAttribute("aria-expanded", "true");
         document.getElementById("clearStoryTitle").textContent = `${document.body.dataset.difficultyLabel} ${storyTiming}ストーリー`;
         document.getElementById("clearStoryTitle").focus({ preventScroll: true });
@@ -125,12 +128,16 @@
             });
             showPage(0);
         } catch {
-            if (token === request) status.textContent = "お話を読み込めませんでした。上のボタンからもう一度お試しください。";
+            if (token === request) {
+                open.hidden = false;
+                status.textContent = "お話を読み込めませんでした。上のボタンからもう一度お試しください。";
+            }
         }
     });
     document.getElementById("closeClearStory").addEventListener("click", () => {
         request++;
         reader.hidden = true;
+        open.hidden = false;
         open.setAttribute("aria-expanded", "false");
         notice.hidden = !unlocked;
         document.getElementById("stageBackLink").focus({ preventScroll: true });

@@ -34,8 +34,10 @@ let mangaRetryCount = 0;
 let unityState = "idle";
 let unityLoadId = 0;
 let unityLoadTimeout;
+let unityProgress = 0;
+const unityProgressBar = document.getElementById("unityProgress");
 
-const UNITY_URL = "./index.html?v=20261025-1656";
+const UNITY_URL = "./index.html?v=20261026-loading2";
 const UNITY_MESSAGE_SOURCE = "gidanyan-unity";
 const UNITY_LOAD_TIMEOUT_MS = 180000;
 const MANGA_LOAD_TIMEOUT_MS = 60000;
@@ -154,6 +156,8 @@ async function prepareManga() {
 
 function updateActionButton() {
     nextBtn.hidden = false;
+    unityProgressBar.hidden = unityState !== "loading";
+    unityProgressBar.value = unityProgress;
     nextBtn.classList.remove("is-loading", "is-error");
     unityStatus.hidden = true;
     mangaRetryBtn.hidden = mangaState !== "error";
@@ -194,7 +198,9 @@ function updateActionButton() {
     nextBtn.disabled = true;
     nextBtn.classList.add("is-loading");
     btnText.textContent = "PLAY";
-    unityStatus.textContent = "ゲームを準備しています。しばらくお待ちください。";
+    unityStatus.textContent = unityProgress === 100
+        ? "お出かけ準備中だにゃ！（読み込み完了・起動準備中）"
+        : `お出かけ準備中だにゃ！ ${unityProgress}%`;
 }
 
 function setUnityState(state, message = "") {
@@ -213,6 +219,7 @@ function startUnityLoad(isRetry = false) {
     window.clearTimeout(unityLoadTimeout);
 
     unityLoadId++;
+    unityProgress = 0;
     setUnityState("loading");
 
     const url = new URL(UNITY_URL, window.location.href);
@@ -246,12 +253,18 @@ window.addEventListener("message", event => {
         message.source !== UNITY_MESSAGE_SOURCE ||
         String(message.loadId) !== String(unityLoadId) ||
         message.difficulty !== difficulty ||
-        !["ready", "error"].includes(message.type) ||
+        !["ready", "error", "progress"].includes(message.type) ||
         unityState !== "loading"
     ) {
         return;
     }
 
+    if (message.type === "progress") {
+        if (!Number.isFinite(message.progress) || message.progress < 0 || message.progress > 100) return;
+        unityProgress = Math.max(unityProgress, Math.round(message.progress));
+        updateActionButton();
+        return;
+    }
     window.clearTimeout(unityLoadTimeout);
 
     if (message.type === "ready") {

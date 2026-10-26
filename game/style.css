@@ -408,3 +408,10 @@ img.manga-image[hidden],
 .story-notice .btn-text { color: #222; font-size: clamp(15px, 4vw, 19px); white-space: normal; }
 .story-notice-close { position: absolute; right: 3px; top: 0; width: 36px; height: 36px; border: 0; background: transparent; color: #222; font-size: 26px; cursor: pointer; }
 #clearStoryReader { scroll-margin-top: 16px; }
+
+/* Loading remains visible while the game iframe prepares off-screen. */
+.unity-progress { display: block; width: min(100%, 420px); height: 22px; margin: 16px auto 8px; border: 3px solid #242424; border-radius: 999px; overflow: hidden; background: #fff5df; accent-color: #ff9800; }
+.unity-progress::-webkit-progress-bar { background: #fff5df; }
+.unity-progress::-webkit-progress-value { background: #ff9800; }
+.unity-progress::-moz-progress-bar { background: #ff9800; }
+.unity-progress[hidden], #openClearStory[hidden] { display: none; }
