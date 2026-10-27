@@ -10,7 +10,7 @@ export function renderLeaderboard(root,data) {
  const personal=root.querySelector('[data-personal]');
  if(personal)personal.textContent=data.personal?`あなたの自己ベスト ${data.personal.score.toLocaleString()} pt ／ ${data.personal.rank}位（${data.total}人）`:'まだランキングに記録がありません。EXを遊んで登録してね！';
  const list=root.querySelector('[data-ranking-list]');if(!list)return;list.replaceChildren();
- for(const row of data.top){const li=document.createElement('li');const name=document.createElement('span');const score=document.createElement('strong');name.textContent=`${row.rank}位　${row.nickname}`;score.textContent=`${row.score.toLocaleString()} pt`;li.append(name,score);list.append(li);}
+ for(const row of data.top.slice(0,10)){const li=document.createElement('li');const name=document.createElement('span');const score=document.createElement('strong');name.textContent=`${row.rank}位　${row.nickname}`;score.textContent=`${row.score.toLocaleString()} pt`;li.append(name,score);list.append(li);}
  if(!data.top.length){const li=document.createElement('li');li.textContent='最初のチャレンジャーを待っています！';list.append(li);}
 }
 export async function mountRanking(root) {
