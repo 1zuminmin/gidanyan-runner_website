@@ -9,24 +9,22 @@ credits.html の「制作メンバー編集欄」を検索してください。
 次のようになっている各行の dd 内の span を、表示したい名前に置き換えます。
 
 ```html
-<div><dt>ゲーム開発</dt><dd class="member-name">お名前・お名前</dd></div>
+<div><dt>ゲーム</dt><dd class="member-name"><span>お名前</span><span>お名前</span></dd></div>
 ```
 
-役割は dt の中です。行（div）をコピーすれば追加できます。未記入時は点線の空欄を表示します。ブラウザ上で入力・保存するフォームではなく、HTMLを編集するテンプレートです。
+ジャンルは dt の中です。span を追加すると同じジャンルに名前を追加できます。複数のジャンルを担当している方は、それぞれに掲載できます。行（div）をコピーするとジャンルを追加できます。ブラウザ上で入力・保存するフォームではなく、HTMLを編集するテンプレートです。
 
 ## 確認した出典（2026-10-26）
 
 - エリアBGMは依頼されたURLで曲名・作者を確認。柳ヶ瀬／ハロウィンはご指定どおり同じ23925。
 - MOERU MUSICは提供URLを記載。曲名・作者は公式ページから取得できなかったため推測で追加していない。
 - タイトルボタン音は提供URL（効果音ラボの一覧）。個別の効果音名は未特定。
-- 鮎ライド：Unity側 Docs/AUDIO_CREDITS.md の AyuMode.mp3 行、Required notices。Laszlo - Here We Are [NCS Release]、抜粋ループ。
-- On-Jin、ポケットサウンド、OtoLogic、効果音ラボの表記も同資料とNOTICE.mdから記載。
-
-### 鮎ライドの許諾確認
-
-Docs/AUDIO_CREDITS.md には「申請・書面確認待ち」と記載されている。ユーザーからも取得済みの回答はまだない。
-2026-10-26確認の https://ncs.io/usage-policy では、ゲーム利用はライセンス申請フォームに連絡するよう案内されている。学生・インディー映画制作の項目でも連絡が必要。「非販売の学生制作だから自動的にゲーム利用も許可」とは判断できない。
-クレジット追加は許諾取得の代わりにならない。申請・承諾記録をチームで確認すること。今回、音源やUnityプロジェクトは変更していない。
+- 鮎ライド：2026-10-28に提供されたURLで「Rush Recklessly / FLASH☆BEAT」を確認し更新。https://opentracks.com/bgm/detail/23946
+- Unity側 Docs/AUDIO_CREDITS.md でも現在の音源は AyuRideBGM2.mp3、旧NCS音源は削除済みと記録されている。今回の作業はWebクレジットのみ。
+- その他の効果音の使用箇所は同資料の Provider-licensed audio の対応表に基づく。
+- On-Jinの禁止表記は維持。公式規約 https://on-jin.com/kiyaku.php では音源がむき出しになる配布の場合に表記が必須。Unity側NOTICE.mdでも必須表記として管理されており、全配布形態で不要との確認が取れていないため削除しない。
+- OtoLogicの作者・曲名・CC BY 4.0リンクは維持し、「音声の加工なし（ファイル名変更）」の説明だけ削除。
+- Special Thanksは皆さまへのお礼、試遊で長く遊んでくれた方へのお礼の順に掲載。二つのお礼を同じ thanks-message クラスで表示する。
 
 ### Unity Asset の照合
 
