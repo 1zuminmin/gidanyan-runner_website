@@ -52,13 +52,19 @@
     };
     const swipeReader = window.createMangaSwipe(pages, showPage);
     const course = document.body.dataset.difficulty;
+    // Keep each course independent, including when different tabs finish together.
+    const progressKey = `gidanyan-story-unlocked-v1:${course}`;
     let request = 0;
     let unlocked = false;
+    try {
+        unlocked = window.localStorage.getItem(progressKey) === "true";
+    } catch {
+        // Storage may be disabled. The current page can still unlock its story.
+    }
     const reset = () => {
-        unlocked = false;
         notice.hidden = true;
         request++;
-        panel.hidden = true;
+        panel.hidden = !unlocked;
         reader.hidden = true;
         open.hidden = false;
         open.setAttribute("aria-expanded", "false");
@@ -70,13 +76,20 @@
         const expected = new URL(frame.src, window.location.href);
         if (event.origin !== expected.origin || !message || message.source !== "gidanyan-unity" ||
             message.difficulty !== course || String(message.loadId) !== expected.searchParams.get("loadId")) return;
-        if (message.type === "run-started" || message.type === "ready" || message.type === "error") reset();
+        if (message.type === "run-started") reset();
+        // Background loading must not close a restored story being read.
         if (message.type !== "result") return;
+        if (typeof message.cleared !== "boolean") return;
+        if (!container.classList.contains("is-visible")) return;
         reset();
         // Extra is endless: its result is normally a failed run, not a goal clear.
-        if (typeof message.cleared !== "boolean") return;
-        if ((!message.cleared && course !== "ex") || !container.classList.contains("is-visible")) return;
+        if (!message.cleared && course !== "ex") return;
         unlocked = true;
+        try {
+            window.localStorage.setItem(progressKey, "true");
+        } catch {
+            // Preserve access for this visit even if persistent storage is unavailable.
+        }
         panel.hidden = false;
         notice.hidden = false;
     });
@@ -143,4 +156,6 @@
         document.getElementById("stageBackLink").focus({ preventScroll: true });
         document.getElementById("stageHeader").scrollIntoView({ behavior: "smooth", block: "start" });
     });
+    reset();
+    notice.hidden = !unlocked;
 })();
