@@ -37,7 +37,7 @@ let unityLoadTimeout;
 let unityProgress = 0;
 const unityProgressBar = document.getElementById("unityProgress");
 
-const UNITY_URL = "./index.html?v=20261026-loading2";
+const UNITY_URL = "./index.html?v=20261028-0331";
 const UNITY_MESSAGE_SOURCE = "gidanyan-unity";
 const UNITY_LOAD_TIMEOUT_MS = 180000;
 const MANGA_LOAD_TIMEOUT_MS = 60000;
