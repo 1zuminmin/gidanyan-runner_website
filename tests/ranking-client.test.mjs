@@ -38,3 +38,11 @@ test('result panel stays hidden until a valid result and hides on retry',async()
  assert.match(e.el('[data-ranking-status]').textContent,/受け付けました/);
  await e.send('run-started');assert.equal(root.hidden,true);
 });
+
+ test('leaderboard caps oversized responses at ten while retaining personal rank',()=>{
+ const e=setup();const top=Array.from({length:15},(_,i)=>({rank:i+1,nickname:'player'+i,score:1000-i}));
+ e.context.renderLeaderboard({querySelector:e.el},{top,total:15,personal:top[14]});
+ assert.equal(e.el('[data-ranking-list]').children.length,10);
+ assert.match(e.el('[data-personal]').textContent,/15位/);
+ assert.equal(e.el('[data-ranking-list]').children[9].children[0].textContent,'10位　player9');
+ });
