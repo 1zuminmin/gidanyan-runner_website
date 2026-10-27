@@ -88,13 +88,13 @@ test('story button hides during reading, returns on image error and after closin
  get('closeClearStory').click();assert.equal(get('openClearStory').hidden,false);
 });
 
-for(const course of ['easy','normal','hard','ex'])test(`${course}: another visit restores the story without playing`,async()=>{
+for(const course of ['easy','normal','hard','ex'])test(`${course}: another visit allows rereading without showing a result notice`,async()=>{
  const storage=memoryStorage();
  setup(course,[],{storage}).send({cleared:course!=='ex'});
  const {get,send}=setup(course,['01.png'],{storage,visible:false});
  assert.equal(get('clearStory').hidden,false);
- assert.equal(get('storyNotice').hidden,false);
- await get('openStoryNotice').click();
+ assert.equal(get('storyNotice').hidden,true);
+ await get('openClearStory').click();
  assert.equal(get('clearStoryReader').hidden,false);
  assert.equal(get('clearStoryPages').children[0].children[0].src,`stories/${course}/01.png`);
  for(const type of ['ready','error']){
@@ -102,6 +102,8 @@ for(const course of ['easy','normal','hard','ex'])test(`${course}: another visit
   assert.equal(get('clearStoryReader').hidden,false);
   assert.equal(get('clearStoryPages').children.length,1);
  }
+ get('closeClearStory').click();
+ assert.equal(get('storyNotice').hidden,true);
 });
 
 test('course progress remains independent across visits and concurrent pages',()=>{
@@ -159,4 +161,15 @@ test('background ready/error notifications do not cancel a restored story fetch'
  finish({ok:true,json:async()=>({normal:['01.png']})});await reading;
  assert.equal(get('clearStoryReader').hidden,false);
  assert.equal(get('clearStoryPages').children.length,1);
+});
+
+for(const course of ['easy','normal','hard','ex']) test(`${course}: retry and rereading do not restore the previous result notice`,async()=>{
+ const {get,send}=setup(course,['01.png']);
+ send();assert.equal(get('storyNotice').hidden,false);
+ send({type:'run-started'});
+ await get('openClearStory').click();get('closeClearStory').click();
+ assert.equal(get('storyNotice').hidden,true);
+ send({cleared:false});
+ assert.equal(get('storyNotice').hidden,course!=='ex');
+ send();assert.equal(get('storyNotice').hidden,false);
 });

@@ -56,12 +56,15 @@
     const progressKey = `gidanyan-story-unlocked-v1:${course}`;
     let request = 0;
     let unlocked = false;
+    // Saved access permits rereading; only this visit's result shows the notice.
+    let hasCurrentResult = false;
     try {
         unlocked = window.localStorage.getItem(progressKey) === "true";
     } catch {
         // Storage may be disabled. The current page can still unlock its story.
     }
     const reset = () => {
+        hasCurrentResult = false;
         notice.hidden = true;
         request++;
         panel.hidden = !unlocked;
@@ -85,6 +88,7 @@
         // Extra is endless: its result is normally a failed run, not a goal clear.
         if (!message.cleared && course !== "ex") return;
         unlocked = true;
+        hasCurrentResult = true;
         try {
             window.localStorage.setItem(progressKey, "true");
         } catch {
@@ -152,10 +156,9 @@
         reader.hidden = true;
         open.hidden = false;
         open.setAttribute("aria-expanded", "false");
-        notice.hidden = !unlocked;
+        notice.hidden = !hasCurrentResult;
         document.getElementById("stageBackLink").focus({ preventScroll: true });
         document.getElementById("stageHeader").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     reset();
-    notice.hidden = !unlocked;
 })();
