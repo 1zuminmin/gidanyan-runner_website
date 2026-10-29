@@ -23,7 +23,7 @@
 .credit-list p, .ayu-credit p { font-size: .9rem; line-height: 1.9; overflow-wrap: anywhere; }
 .credit-label { color: #655b4d; }
 .source { display: block; font-size: .75rem; color: #776c5d; }
-.ayu-credit { background: #fff; border-radius: 18px; padding: 20px; }
+.ayu-credit { padding: 18px 0 0; }
 .credit-note { color: #655b4d; font-size: .8rem !important; margin-top: 10px; }
 .team-list > div { padding: 15px 0; display: grid; grid-template-columns: minmax(100px, 1fr) 2fr; gap: 16px; align-items: start; }
 .team-list dt { font-size: .9rem; }
