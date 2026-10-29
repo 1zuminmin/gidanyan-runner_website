@@ -5,6 +5,12 @@ const fallbackMangaPages = [
     "images/stage1_manga-p4.png"
 ];
 const courseMangaPages = {
+    "ex": [
+        "stories/before/ex/01.png",
+        "stories/before/ex/02.png",
+        "stories/before/ex/03.png",
+        "stories/before/ex/04.png"
+    ],
     "easy": [
         "stories/before/easy/01.png",
         "stories/before/easy/02.png",
@@ -138,7 +144,7 @@ async function prepareManga() {
                 const slide = document.createElement("div");
                 slide.className = "manga-slide";
                 const box = document.createElement("div");
-                box.className = difficulty === "ex" ? "manga-box" : "manga-box full-page-manga";
+                box.className = courseMangaPages[difficulty] ? "manga-box full-page-manga" : "manga-box";
                 box.appendChild(image);
                 slide.appendChild(box);
                 mangaTrack.appendChild(slide);
